@@ -1,0 +1,11 @@
+department,channel,campaign,spend,conversions,revenue
+Marketing,Email,Spring Launch,4200,118,18600
+Marketing,Social,Spring Launch,5100,136,21400
+Sales,Partner,Enterprise Push,7600,82,34400
+Support,Referral,Loyalty Boost,2200,44,8800
+Marketing,Search,Spring Launch,6900,165,30250
+Sales,Outbound,Enterprise Push,8300,77,38100
+Support,Email,Loyalty Boost,1800,39,7600
+Marketing,Social,Retention,4700,121,19850
+Sales,Partner,Retention,5900,64,27200
+Support,Referral,Retention,2600,52,10200

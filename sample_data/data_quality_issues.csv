@@ -1,0 +1,13 @@
+date,region,product,sales,profit,status,constant_flag
+2026-02-01,North,Alpha,1000,210,closed,active
+2026-02-02,South,Beta,,180,closed,active
+2026-02-03,East,Gamma,920,,pending,active
+2026-02-04,,Alpha,880,160,closed,active
+2026-02-05,North,Beta,1000,210,closed,active
+2026-02-05,North,Beta,1000,210,closed,active
+2026-02-06,South,,760,120,pending,active
+2026-02-07,East,Gamma,830,145,,active
+2026-02-08,West,Alpha,910,170,closed,active
+2026-02-09,West,Beta,not_available,155,pending,active
+2026-02-10,North,Alpha,1040,225,closed,active
+2026-02-11,South,Gamma,790,130,pending,active
