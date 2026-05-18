@@ -1,5 +1,42 @@
 # Development
 
+## Developer Tooling
+
+Run the local workstation doctor before starting work:
+
+```bash
+make doctor
+```
+
+The doctor checks required tools, Docker availability, expected env example files, common local ports, and working-tree cleanliness.
+
+Common top-level commands:
+
+```bash
+make help
+make install
+make dev
+make test
+make typecheck
+make build
+make docker-build
+make docker-up
+make docker-smoke
+make docker-down
+make release-check
+```
+
+`make release-check` is intentionally stricter than daily development: it requires a clean working tree and runs the local release gate. Docker smoke is included when Docker is available and running.
+
+## CI/CD
+
+GitHub Actions are split into two workflows:
+
+- `ci.yml`: runs on push and pull request. It verifies backend tests, frontend optional lint/typecheck/build, Docker Compose config, and Docker image builds.
+- `docker-smoke.yml`: manual workflow for runtime verification. It builds images, starts Compose, checks backend/frontend health, runs the smoke test, and always tears down the stack with volumes.
+
+See [Contributing](CONTRIBUTING.md) for the contributor checklist.
+
 ## Repository Layout
 
 ```text

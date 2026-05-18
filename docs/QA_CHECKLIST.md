@@ -2,9 +2,11 @@
 
 ## Automated
 
+- [ ] Workstation doctor passes: `make doctor`
 - [ ] Backend tests pass: `cd backend && .venv/bin/pytest`
 - [ ] Frontend typecheck passes: `cd web && npm run typecheck`
 - [ ] Frontend build passes: `cd web && npm run build`
+- [ ] Release check passes from a clean tree: `make release-check`
 - [ ] Backend smoke passes: `cd backend && .venv/bin/python scripts/smoke_test.py`
 - [ ] Alembic migration succeeds: `cd backend && .venv/bin/alembic upgrade head`
 - [ ] Async smoke passes: `cd backend && .venv/bin/python scripts/smoke_test.py --async-jobs`

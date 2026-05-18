@@ -52,6 +52,14 @@ Run the Docker smoke test:
 make docker-smoke
 ```
 
+For a local release gate, run:
+
+```bash
+make release-check
+```
+
+This verifies the working tree is clean, runs backend tests, frontend checks, Docker Compose config, Docker build, and Docker smoke when Docker Desktop is available.
+
 ## Worker Smoke
 
 Start the worker profile:

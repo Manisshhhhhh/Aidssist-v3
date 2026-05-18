@@ -1,6 +1,6 @@
 # Aidssist v3
 
-Status: Release Candidate 1 (`3.0.0-rc1`)
+Status: `3.0.0-rc2`
 
 Aidssist v3 is a local-first autonomous data intelligence platform. It uploads CSV and Excel `.xlsx` files, validates and profiles datasets, recommends charts, renders real visualizations, produces deterministic insights, forecasts time series, answers dataset questions with a safe rule-based Q&A engine, and exports HTML/JSON reports.
 
@@ -47,6 +47,12 @@ npm run dev
 ```
 
 The command creates missing local dependencies, starts the backend, reuses an already-running frontend or backend when present, and keeps both services tied to one terminal.
+
+Check your workstation before starting:
+
+```bash
+make doctor
+```
 
 Backend only:
 
@@ -109,6 +115,14 @@ Aidssist V3 RC3 has passed Docker Desktop runtime verification on macOS, includi
 ## Make Commands
 
 ```bash
+make help
+make install
+make dev
+make test
+make typecheck
+make build
+make doctor
+make release-check
 make backend-install
 make backend-migrate
 make backend-run
@@ -120,9 +134,28 @@ make frontend-run
 make frontend-build
 make smoke
 make smoke-async
+make docker-build
+make docker-up
+make docker-smoke
+make docker-down
 ```
 
 Run `make smoke` after the backend is already running.
+
+## CI/CD
+
+Aidssist includes GitHub Actions workflows for development and release confidence:
+
+- `.github/workflows/ci.yml` runs on push and pull request. It installs backend/frontend dependencies, runs backend tests, runs frontend optional lint/typecheck/build, validates Docker Compose config, and builds Docker images.
+- `.github/workflows/docker-smoke.yml` is manual via `workflow_dispatch`. It builds Docker images, starts Compose, checks backend/frontend health, runs the backend smoke test, and always tears the stack down with volumes.
+
+Local release checks:
+
+```bash
+make release-check
+```
+
+The release check requires a clean working tree, runs tests and frontend checks, validates Docker Compose, builds images, and runs Docker smoke when Docker Desktop is available.
 
 ## Tests And Builds
 
