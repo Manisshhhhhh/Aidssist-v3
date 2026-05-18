@@ -1,9 +1,9 @@
-# Aidssist V3 RC1 Release Notes
+# Aidssist V3 Release Notes
 
 Date: 2026-05-16
-Version: `3.0.0-rc1`
+Latest candidate: `3.0.0-rc3`
 
-Aidssist V3 RC1 is the first release-candidate package for local-first autonomous data intelligence workflows.
+Aidssist V3 RC1 is the first release-candidate package for local-first autonomous data intelligence workflows. RC3 is the current release-candidate line for Docker-verified CI/CD and release consistency.
 
 ## Major Capabilities
 
@@ -60,6 +60,12 @@ Completed in the local Codex environment:
 ## Docker Verification Update
 
 - Docker Desktop runtime verification passed on macOS for RC3: Compose build/up, backend health, frontend nginx, sync smoke, async worker smoke, restart persistence, fresh-volume startup, and fresh upload/report smoke.
+
+## RC3 Consistency Update
+
+- RC3 fixes release version consistency after RC2 had already been published against an earlier commit.
+- RC3 includes CI/CD hardening, the manual Docker smoke workflow, the local doctor script, the release-check script, and Makefile/documentation improvements.
+- GitHub Actions status should be checked in the repository Actions tab after publishing.
 
 ## Known Blockers
 

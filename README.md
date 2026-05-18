@@ -1,6 +1,6 @@
 # Aidssist v3
 
-Status: `3.0.0-rc2`
+Status: `3.0.0-rc3`
 
 Aidssist v3 is a local-first autonomous data intelligence platform. It uploads CSV and Excel `.xlsx` files, validates and profiles datasets, recommends charts, renders real visualizations, produces deterministic insights, forecasts time series, answers dataset questions with a safe rule-based Q&A engine, and exports HTML/JSON reports.
 
