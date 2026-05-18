@@ -33,26 +33,26 @@
 
 ## Docker Release Candidate
 
-- [ ] Docker CLI is installed and reachable: `docker --version`
-- [ ] Docker build succeeds: `docker compose build --no-cache`
-- [ ] Docker services start: `docker compose up -d`
-- [ ] Compose services are healthy: `docker compose ps`
-- [ ] Backend health returns 200: `curl -i http://127.0.0.1:8000/health`
-- [ ] Health response includes `X-Request-ID` and security headers.
-- [ ] Frontend nginx responds: `curl -I http://127.0.0.1:8080`
-- [ ] Favicon responds: `curl -I http://127.0.0.1:8080/favicon.svg`
-- [ ] Frontend opens at `http://127.0.0.1:8080`.
+- [x] Docker CLI is installed and reachable: `docker --version`
+- [x] Docker build succeeds: `docker compose build --no-cache`
+- [x] Docker services start: `docker compose up -d`
+- [x] Compose services are healthy: `docker compose ps`
+- [x] Backend health returns 200: `curl -i http://127.0.0.1:8000/health`
+- [x] Health response includes `X-Request-ID` and security headers.
+- [x] Frontend nginx responds: `curl -I http://127.0.0.1:8080`
+- [x] Favicon responds: `curl -I http://127.0.0.1:8080/favicon.svg`
+- [x] Frontend opens at `http://127.0.0.1:8080`.
 - [ ] API status is online in the browser.
-- [ ] `make docker-smoke` passes.
+- [x] `make docker-smoke` passes.
 - [ ] Auth-disabled browser smoke passes.
 - [ ] Auth-enabled browser smoke passes.
-- [ ] Async worker profile starts: `COMPOSE_PROFILES=worker docker compose up -d worker`
-- [ ] Async worker smoke passes.
-- [ ] Dataset/report persistence survives `docker compose restart`.
+- [x] Async worker profile starts: `COMPOSE_PROFILES=worker docker compose up -d worker`
+- [x] Async worker smoke passes.
+- [x] Dataset/report persistence survives `docker compose restart`.
 - [ ] Dataset/report persistence survives `docker compose down && docker compose up -d`.
-- [ ] Fresh install after `docker compose down --volumes --remove-orphans` works.
-- [ ] Docker storage audit has no missing active artifacts in a fresh volume.
-- [ ] Docker job audit has no stuck running jobs.
+- [x] Fresh install after `docker compose down --volumes --remove-orphans` works.
+- [x] Docker storage audit has no missing active artifacts in a fresh volume.
+- [x] Docker job audit has no stuck running jobs.
 - [ ] LLM-disabled `/ai-summary` returns a clean 503.
 - [ ] Optional Gemini-enabled smoke passes only with a new rotated server-side key.
 

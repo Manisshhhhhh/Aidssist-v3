@@ -57,9 +57,12 @@ Completed in the local Codex environment:
 - Restore dry-run validation: passed
 - Job audit: no queued/running/failed jobs
 
+## Docker Verification Update
+
+- Docker Desktop runtime verification passed on macOS for RC3: Compose build/up, backend health, frontend nginx, sync smoke, async worker smoke, restart persistence, fresh-volume startup, and fresh upload/report smoke.
+
 ## Known Blockers
 
-- Docker runtime verification remains pending in this environment because Docker CLI is unavailable.
 - Existing local development DB is not Alembic-stamped and can show existing-table errors; fresh DB migration was verified.
 - Local storage audit reports old development artifact drift from earlier runs.
 - Gemini runtime smoke is skipped unless a new rotated `GEMINI_API_KEY` is configured.

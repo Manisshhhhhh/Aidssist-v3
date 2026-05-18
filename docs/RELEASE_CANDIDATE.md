@@ -1,12 +1,12 @@
-# Aidssist V3 RC1
+# Aidssist V3 RC3
 
-Date: 2026-05-16
+Date: 2026-05-18
 
-Aidssist V3 RC1 is a release-candidate package for local development, Docker Compose demos, and internal evaluation. It is not yet approved for public internet deployment.
+Aidssist V3 RC3 is a release-candidate package for local development, Docker Compose demos, and internal evaluation. It is not yet approved for public internet deployment.
 
 ## Verified In This Environment
 
-The Codex environment used for this RC pass does not have Docker installed, so Docker runtime verification is blocked here. The following non-Docker checks were completed:
+Docker Desktop runtime verification passed on macOS. The following checks were completed:
 
 - Backend test suite: `207 passed`
 - Frontend typecheck: passed
@@ -14,10 +14,19 @@ The Codex environment used for this RC pass does not have Docker installed, so D
 - Local backend health: passed, including `X-Request-ID` and security headers
 - Local sync smoke: passed
 - Local async-job smoke: passed
+- Docker Compose no-cache build: passed
+- Docker Compose startup: passed
+- Docker backend health: passed, including `X-Request-ID` and security headers
+- Docker frontend nginx and favicon: passed
+- Docker sync smoke: passed
+- Docker async worker smoke: passed
+- Docker restart persistence: passed
+- Docker fresh-volume startup: passed
+- Docker fresh upload/report smoke: passed
 - Job audit script: passed with no queued, running, or failed jobs
 - LLM-disabled endpoint behavior: passed with clean `503 Service Unavailable`
 
-Storage audit completed and reported pre-existing local artifact drift in the development workspace. This is not a Docker RC pass/fail result; run the audit again after a fresh Docker volume test.
+Docker storage audit completed with no missing active artifacts. It reported only report `manifest.json` files as orphan storage objects; these are harmless generated metadata files that are not currently registered as artifacts.
 
 ## Docker Quick Start
 
@@ -180,7 +189,6 @@ Never use a key pasted into chat history.
 
 ## Known RC Limitations
 
-- Docker runtime verification is still blocked in this Codex environment because `docker` is not installed.
 - No HTTPS termination in Compose.
 - SQLite is the default metadata DB.
 - Local filesystem storage is the default artifact backend.

@@ -104,7 +104,7 @@ See [Release Candidate](docs/RELEASE_CANDIDATE.md) for the full RC verification 
 
 ## Release Candidate Status
 
-Aidssist V3 RC1 has passed local backend tests, frontend typecheck/build, sync smoke, async-job smoke, and LLM-disabled behavior checks in this workspace. Docker runtime verification still needs to be run on a machine with Docker installed; the exact commands are documented in [Release Candidate](docs/RELEASE_CANDIDATE.md).
+Aidssist V3 RC3 has passed Docker Desktop runtime verification on macOS, including Docker Compose build, backend health, frontend nginx, sync smoke, async worker smoke, restart persistence, fresh-volume startup, and fresh upload/report smoke. RC1 remains published and unchanged; RC2 added publication/runtime polish, and RC3 adds Docker signoff.
 
 ## Make Commands
 

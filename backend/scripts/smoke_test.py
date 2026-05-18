@@ -262,8 +262,7 @@ def process_and_poll_job(session: requests.Session, base_url: str, job_id: str) 
     try:
         from app.services.job_runner import run_next_job_once
 
-        processed = None
-        for _ in range(10):
+        for _ in range(30):
             processed = run_next_job_once()
             response = session.get(f"{base_url}/jobs/{job_id}", timeout=10)
             expect(response, 200, f"job status {job_id}")
@@ -271,7 +270,11 @@ def process_and_poll_job(session: requests.Session, base_url: str, job_id: str) 
             if payload.get("status") in {"succeeded", "failed", "cancelled"}:
                 break
             if processed is None:
-                raise SmokeFailure(f"no queued job was available for {job_id}")
+                # A separately running worker may have claimed the job already.
+                # Keep polling instead of treating an empty local queue as failure.
+                import time
+
+                time.sleep(1)
     except ImportError as exc:
         raise SmokeFailure("async smoke requires running from the backend environment") from exc
 
