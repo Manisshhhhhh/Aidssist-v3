@@ -25,7 +25,7 @@ From Finder, double-click `start-macos.command`, or run:
 
 ```bash
 cd ~/Desktop/Aidssist
-./start-macos.command
+npm run dev
 ```
 
 This starts:
@@ -36,9 +36,19 @@ This starts:
 
 Keep the terminal window open while using the app.
 
+`start-macos.command` runs the same dev command for Finder launches.
+
 ## Fresh Clone Setup
 
-Backend:
+All-in-one local dev:
+
+```bash
+npm run dev
+```
+
+The command creates missing local dependencies, starts the backend, reuses an already-running frontend or backend when present, and keeps both services tied to one terminal.
+
+Backend only:
 
 ```bash
 cd backend

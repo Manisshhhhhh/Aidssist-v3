@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import inspect, text
 
 from app.core.config import get_settings
@@ -15,6 +19,7 @@ DEFAULT_WORKSPACE_SLUG = "default"
 def init_db() -> None:
     Base.metadata.create_all(bind=get_engine())
     add_backward_compatible_columns()
+    sync_sqlite_alembic_version()
     ensure_default_workspace()
     validate_auth_configuration()
     validate_storage_configuration()
@@ -52,6 +57,39 @@ def add_backward_compatible_columns() -> None:
                 connection.execute(text("ALTER TABLE datasets ADD COLUMN owner_user_id INTEGER"))
         if "workspace_members" in tables:
             return
+
+
+def sync_sqlite_alembic_version() -> None:
+    """Stamp local SQLite DBs created by create_all so migrations stay usable."""
+    engine = get_engine()
+    if engine.dialect.name != "sqlite":
+        return
+
+    inspector = inspect(engine)
+    tables = set(inspector.get_table_names())
+    if "alembic_version" not in tables:
+        return
+
+    expected_tables = set(Base.metadata.tables)
+    if not expected_tables.issubset(tables):
+        return
+
+    with engine.begin() as connection:
+        current_version = connection.execute(text("SELECT version_num FROM alembic_version LIMIT 1")).scalar()
+        if current_version:
+            return
+
+        alembic_ini = Path(__file__).resolve().parents[2] / "alembic.ini"
+        if not alembic_ini.exists():
+            return
+
+        config = Config(str(alembic_ini))
+        head_revision = ScriptDirectory.from_config(config).get_current_head()
+        if head_revision:
+            connection.execute(
+                text("INSERT INTO alembic_version (version_num) VALUES (:version_num)"),
+                {"version_num": head_revision},
+            )
 
 
 def validate_auth_configuration() -> None:

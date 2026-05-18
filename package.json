@@ -1,0 +1,12 @@
+{
+  "name": "aidssist-v3",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "bash scripts/dev.sh",
+    "backend:dev": "cd backend && .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload --reload-dir app",
+    "web:dev": "cd web && npm run dev",
+    "typecheck": "cd web && npm run typecheck",
+    "build": "cd web && npm run build"
+  }
+}
