@@ -108,6 +108,25 @@ docker compose down --volumes --remove-orphans
 
 See [Release Candidate](docs/RELEASE_CANDIDATE.md) for the full RC verification runbook.
 
+## Live Demo Deployment
+
+Aidssist v3 can be deployed without buying a domain. Use platform-provided URLs such as Render `.onrender.com`, Railway `.up.railway.app`, Fly.io `.fly.dev`, Vercel `.vercel.app`, or Netlify `.netlify.app`.
+
+For a controlled live demo, enable user auth and set a strong server-side JWT secret:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+Do not commit the generated secret. Add it only in the hosting provider dashboard.
+
+Recommended starting points:
+
+- [Live Deployment](docs/LIVE_DEPLOYMENT.md)
+- [Railway Deployment](docs/RAILWAY_DEPLOYMENT.md)
+
+Public deployments should use auth, exact CORS origins, persistent storage, and LLM disabled unless a reviewed backend-only Gemini key is configured.
+
 ## Release Candidate Status
 
 Aidssist V3 RC3 has passed Docker Desktop runtime verification on macOS, including Docker Compose build, backend health, frontend nginx, sync smoke, async worker smoke, restart persistence, fresh-volume startup, and fresh upload/report smoke. RC1 remains published and unchanged; RC2 added publication/runtime polish, and RC3 adds Docker signoff.
@@ -405,6 +424,8 @@ S3-compatible storage settings are scaffolded for a future provider, but S3 is n
 - [Frontend Smoke Test](docs/FRONTEND_SMOKE_TEST.md)
 - [Performance Notes](docs/PERFORMANCE.md)
 - [Deployment](docs/DEPLOYMENT.md)
+- [Live Deployment](docs/LIVE_DEPLOYMENT.md)
+- [Railway Deployment](docs/RAILWAY_DEPLOYMENT.md)
 - [Production Readiness](docs/PRODUCTION_READINESS.md)
 - [Release Candidate](docs/RELEASE_CANDIDATE.md)
 - [Release Notes](docs/RELEASE_NOTES.md)

@@ -2,6 +2,16 @@
 
 Aidssist V3 can run as local development processes or as a Docker Compose deployment. The Docker setup is intended for reliable local demos and internal environments, not a public internet production deployment yet.
 
+For hosted demos on platform-provided URLs, see [Live Deployment](LIVE_DEPLOYMENT.md) and [Railway Deployment](RAILWAY_DEPLOYMENT.md). You do not need to buy a custom domain for a demo.
+
+Generate production secrets locally and paste them only into your hosting provider dashboard:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+Use the generated value for `AIDSSIST_JWT_SECRET_KEY` when `AIDSSIST_USER_AUTH_ENABLED=true`. Never commit real secrets.
+
 ## Docker Compose Local Deployment
 
 Build images:

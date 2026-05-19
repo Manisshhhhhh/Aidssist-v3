@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: aidssist-v3-backend
+    runtime: docker
+    rootDir: backend
+    plan: starter
+    dockerCommand: ./scripts/start.sh
+    healthCheckPath: /health
+    disk:
+      name: aidssist-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: AIDSSIST_ENVIRONMENT
+        value: production
+      - key: AIDSSIST_DATABASE_URL
+        value: sqlite:////data/aidssist.db
+      - key: AIDSSIST_STORAGE_BACKEND
+        value: local
+      - key: AIDSSIST_STORAGE_LOCAL_ROOT
+        value: /data/datasets
+      - key: AIDSSIST_REPORTS_LOCAL_ROOT
+        value: /data/reports
+      - key: AIDSSIST_DATASETS_DIR
+        value: /data/datasets
+      - key: AIDSSIST_REPORTS_DIR
+        value: /data/reports
+      - key: AIDSSIST_BACKUP_DIR
+        value: /data/backups
+      - key: AIDSSIST_USER_AUTH_ENABLED
+        value: "true"
+      - key: AIDSSIST_JWT_SECRET_KEY
+        generateValue: true
+      - key: AIDSSIST_AUTH_ENABLED
+        value: "false"
+      - key: AIDSSIST_LLM_ENABLED
+        value: "false"
+      - key: AIDSSIST_AUDIT_LOG_ENABLED
+        value: "true"
+      - key: AIDSSIST_STARTUP_PREFLIGHT_ENABLED
+        value: "true"
+      - key: AIDSSIST_READ_ONLY_MODE
+        value: "false"
+      - key: AIDSSIST_SAFE_MODE
+        value: "false"
+      - key: AIDSSIST_CORS_ORIGIN_REGEX
+        value: "^https://.*\\.(onrender\\.com|up\\.railway\\.app|fly\\.dev|vercel\\.app|netlify\\.app)$"
+
+  - type: web
+    name: aidssist-v3-frontend
+    runtime: static
+    rootDir: web
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://replace-with-backend-url.onrender.com

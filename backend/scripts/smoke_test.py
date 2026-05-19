@@ -23,7 +23,11 @@ class SmokeFailure(Exception):
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run Aidssist V3 backend smoke test.")
-    parser.add_argument("--base-url", default="http://127.0.0.1:8000", help="Running backend base URL.")
+    parser.add_argument(
+        "--base-url",
+        default=os.getenv("AIDSSIST_SMOKE_BASE_URL", "http://127.0.0.1:8000"),
+        help="Running backend base URL. Defaults to AIDSSIST_SMOKE_BASE_URL or localhost.",
+    )
     parser.add_argument("--async-jobs", action="store_true", help="Exercise async analysis/report jobs with the local worker.")
     parser.add_argument("--llm", action="store_true", help="Exercise optional AI summary when LLM env is configured.")
     parser.add_argument("--preflight", action="store_true", help="Exercise diagnostics preflight endpoint.")
