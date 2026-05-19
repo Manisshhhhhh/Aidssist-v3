@@ -75,6 +75,8 @@ GitHub Pages is not enough for Aidssist v3 because the product has a FastAPI bac
 
 This is the recommended free or low-cost split for a first no-domain demo.
 
+Important: `https://aidssist-v3.onrender.com` is the backend API, not the website. It is normal for that URL to show JSON API metadata. Deploy `web/` to Vercel and open the Vercel URL for the Aidssist UI.
+
 ### Backend On Render
 
 1. In Render, create a new web service from `Manisshhhhhh/Aidssist-v3`.
@@ -133,6 +135,8 @@ This is the recommended free or low-cost split for a first no-domain demo.
 
 8. Redeploy/restart the backend.
 9. Open the Vercel URL and confirm API status is online.
+
+See [Vercel Deployment](VERCEL_DEPLOYMENT.md) for the exact frontend settings and smoke command.
 
 ## Netlify Frontend + Render Backend
 
@@ -230,6 +234,20 @@ Example:
 ```text
 AIDSSIST_CORS_ORIGINS=https://your-frontend.onrender.com
 ```
+
+For Vercel:
+
+```text
+AIDSSIST_CORS_ORIGINS=https://<your-vercel-project>.vercel.app
+```
+
+Temporary testing-only CORS can be:
+
+```text
+AIDSSIST_CORS_ORIGINS=*
+```
+
+For the final demo, use the exact Vercel URL instead of `*`.
 
 For early demos, a platform-subdomain regex can be used, but production should use exact allowed origins.
 

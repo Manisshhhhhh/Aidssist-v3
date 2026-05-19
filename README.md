@@ -131,6 +131,20 @@ Recommended no-domain split:
 - Backend: Render or Railway web service.
 - Domain: use platform URLs; no custom domain required.
 
+If `https://aidssist-v3.onrender.com` shows JSON, that is expected: it is the backend API. Deploy the `web/` frontend to Vercel and open the generated `.vercel.app` URL.
+
+Vercel frontend setting:
+
+```text
+VITE_API_BASE_URL=https://aidssist-v3.onrender.com
+```
+
+Render backend CORS after Vercel deploys:
+
+```text
+AIDSSIST_CORS_ORIGINS=https://<your-vercel-project>.vercel.app
+```
+
 GitHub Pages is not enough by itself because Aidssist has a FastAPI backend. Public deployments should use auth, exact CORS origins, persistent storage, and LLM disabled unless a reviewed backend-only Gemini key is configured. Free tiers may sleep or have usage limits, and persistent storage may require a paid plan.
 
 ## Release Candidate Status
@@ -431,6 +445,7 @@ S3-compatible storage settings are scaffolded for a future provider, but S3 is n
 - [Performance Notes](docs/PERFORMANCE.md)
 - [Deployment](docs/DEPLOYMENT.md)
 - [Live Deployment](docs/LIVE_DEPLOYMENT.md)
+- [Vercel Deployment](docs/VERCEL_DEPLOYMENT.md)
 - [Railway Deployment](docs/RAILWAY_DEPLOYMENT.md)
 - [Production Readiness](docs/PRODUCTION_READINESS.md)
 - [Release Candidate](docs/RELEASE_CANDIDATE.md)
