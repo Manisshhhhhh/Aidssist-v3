@@ -112,6 +112,23 @@ def test_health_remains_public_when_user_auth_enabled(client: TestClient, monkey
     assert response.status_code == 200
 
 
+def test_auth_status_exposes_safe_llm_flags(client: TestClient, monkeypatch) -> None:
+    monkeypatch.setenv("AIDSSIST_LLM_ENABLED", "true")
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key-redacted")
+    get_settings.cache_clear()
+
+    response = client.get("/auth/status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["llm_enabled"] is True
+    assert payload["llm_provider"] == "gemini"
+    assert payload["llm_model"]
+    assert payload["llm_key_configured"] is True
+    assert "test-key-redacted" not in response.text
+    get_settings.cache_clear()
+
+
 def test_auth_disabled_keeps_upload_and_list_working(client: TestClient) -> None:
     upload = client.post("/upload", files=CSV_FILE)
     listing = client.get("/datasets")

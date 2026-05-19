@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AlertCircle, Loader2, Sparkles } from "lucide-react";
 
 import { createAiSummary } from "../../api/llm";
+import { useAuth } from "../../auth/useAuth";
 import type { AnalysisResponse } from "../../types/analysis";
 import type { AiSummaryRequest, AiSummaryResponse } from "../../types/llm";
 import { Button } from "../ui/Button";
@@ -23,13 +24,18 @@ const defaultRequest: AiSummaryRequest = {
 };
 
 export function AiSummaryPanel({ analysis, datasetId }: AiSummaryPanelProps) {
+  const { status } = useAuth();
   const [options, setOptions] = useState<AiSummaryRequest>(defaultRequest);
   const [summary, setSummary] = useState<AiSummaryResponse | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const llmStatusKnown = Boolean(status);
+  const isLlmConfigured = Boolean(status?.llm_enabled && status.llm_key_configured);
+  const isActionDisabled = isGenerating || !isLlmConfigured;
+  const setupMessage = getLlmSetupMessage(status);
 
   async function handleGenerate() {
-    if (!analysis || isGenerating) {
+    if (!analysis || isActionDisabled) {
       return;
     }
     setIsGenerating(true);
@@ -65,7 +71,13 @@ export function AiSummaryPanel({ analysis, datasetId }: AiSummaryPanelProps) {
 
       {analysis ? (
         <div className="space-y-5">
-          <AiSummaryOptions disabled={isGenerating} onChange={setOptions} value={options} />
+          <AiSummaryOptions disabled={isActionDisabled} onChange={setOptions} value={options} />
+          {setupMessage ? (
+            <div className="flex items-start gap-3 rounded-xl border border-outline bg-surface-container/70 p-4 text-sm text-on-surface-muted">
+              <Sparkles className="mt-0.5 shrink-0 text-primary-light" size={18} aria-hidden="true" />
+              <p>{setupMessage}</p>
+            </div>
+          ) : null}
           {error ? (
             <div className="flex items-start gap-3 rounded-xl border border-danger/25 bg-danger/10 p-4 text-sm text-on-surface">
               <AlertCircle className="mt-0.5 shrink-0 text-danger" size={18} aria-hidden="true" />
@@ -73,7 +85,7 @@ export function AiSummaryPanel({ analysis, datasetId }: AiSummaryPanelProps) {
             </div>
           ) : null}
           {summary ? <AiSummaryResult summary={summary} /> : <AiSummaryEmptyState />}
-          <Button disabled={isGenerating} onClick={() => void handleGenerate()}>
+          <Button disabled={!llmStatusKnown || isActionDisabled} onClick={() => void handleGenerate()}>
             {isGenerating ? <Loader2 className="animate-spin" size={18} aria-hidden="true" /> : null}
             Generate AI summary
           </Button>
@@ -81,4 +93,17 @@ export function AiSummaryPanel({ analysis, datasetId }: AiSummaryPanelProps) {
       ) : null}
     </Card>
   );
+}
+
+function getLlmSetupMessage(status: ReturnType<typeof useAuth>["status"]): string | null {
+  if (!status) {
+    return "Checking AI summary availability...";
+  }
+  if (!status.llm_enabled) {
+    return "AI summaries are disabled on this deployment. Enable AIDSSIST_LLM_ENABLED on the backend and configure a fresh Gemini API key to use this panel.";
+  }
+  if (!status.llm_key_configured) {
+    return "AI summaries are enabled, but GEMINI_API_KEY is not configured on the backend.";
+  }
+  return null;
 }

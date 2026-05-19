@@ -43,3 +43,7 @@ class LoginResponse(BaseModel):
 class AuthStatusResponse(BaseModel):
     user_auth_enabled: bool
     api_key_auth_enabled: bool
+    llm_enabled: bool
+    llm_provider: str
+    llm_model: str
+    llm_key_configured: bool

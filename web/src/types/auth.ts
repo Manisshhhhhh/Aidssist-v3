@@ -28,4 +28,8 @@ export interface LoginResponse {
 export interface AuthStatusResponse {
   user_auth_enabled: boolean;
   api_key_auth_enabled: boolean;
+  llm_enabled: boolean;
+  llm_provider: string;
+  llm_model: string;
+  llm_key_configured: boolean;
 }

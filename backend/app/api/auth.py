@@ -26,6 +26,10 @@ def auth_status() -> AuthStatusResponse:
     return AuthStatusResponse(
         user_auth_enabled=settings.user_auth_enabled,
         api_key_auth_enabled=settings.auth_enabled,
+        llm_enabled=settings.llm_enabled,
+        llm_provider=settings.llm_provider,
+        llm_model=settings.gemini_model if settings.llm_provider == "gemini" else "",
+        llm_key_configured=bool(settings.gemini_api_key),
     )
 
 
