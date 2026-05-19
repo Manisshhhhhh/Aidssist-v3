@@ -70,6 +70,17 @@ def test_frontend_cors_defaults_include_dev_and_docker_origins() -> None:
     assert "http://localhost:5173" in settings.cors_origins
     assert "http://127.0.0.1:8080" in settings.cors_origins
     assert "http://localhost:8080" in settings.cors_origins
+    assert "https://aidssist-v3.vercel.app" in settings.cors_origins
+
+
+def test_cors_origins_accept_plain_url_env(monkeypatch) -> None:
+    monkeypatch.setenv("AIDSSIST_CORS_ORIGINS", "https://aidssist-v3.vercel.app")
+    get_settings.cache_clear()
+
+    settings = get_settings()
+
+    assert settings.cors_origins == ["https://aidssist-v3.vercel.app"]
+    get_settings.cache_clear()
 
 
 def test_rate_limiter_returns_429_when_limit_exceeded(client: TestClient, monkeypatch) -> None:
