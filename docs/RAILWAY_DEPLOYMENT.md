@@ -2,6 +2,8 @@
 
 Railway can host Aidssist v3 with platform-provided `.up.railway.app` URLs. Verify current Railway pricing, volume behavior, and free-tier limits before deploying.
 
+Use Railway as the full-stack fallback if a Render backend plus Vercel/Netlify frontend is blocked by service limits, disk limits, or setup complexity. No custom domain is required.
+
 ## Suggested Services
 
 Create services from the GitHub repo:
@@ -11,6 +13,30 @@ Create services from the GitHub repo:
 - Optional worker service from the backend image with command `python scripts/worker.py`.
 
 For a full worker-backed demo, confirm the worker can access the same database and artifacts as the backend. If using SQLite and local storage, do not assume separate services share the same volume unless your Railway setup explicitly provides that behavior. If not, keep jobs synchronous or move to shared managed services.
+
+## Full-Stack Fallback Steps
+
+1. Connect the GitHub repo: `Manisshhhhhh/Aidssist-v3`.
+2. Create a backend service using `backend/Dockerfile`.
+3. Set the backend start command to:
+
+   ```bash
+   ./scripts/start.sh
+   ```
+
+4. Add a persistent volume if Railway offers one for your plan. Mount it at `/data`.
+5. Configure backend environment variables from the section below.
+6. Deploy backend and confirm:
+
+   ```bash
+   curl -i https://your-backend-url.up.railway.app/health
+   ```
+
+7. Create a frontend service from `web/`, or deploy the frontend to Vercel/Netlify.
+8. Set frontend `VITE_API_BASE_URL` to the backend Railway URL.
+9. Set backend `AIDSSIST_CORS_ORIGINS` to the frontend URL.
+10. Redeploy the frontend after changing `VITE_API_BASE_URL`.
+11. Run live smoke from your local machine.
 
 ## Backend Environment
 

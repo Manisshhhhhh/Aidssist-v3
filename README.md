@@ -125,7 +125,13 @@ Recommended starting points:
 - [Live Deployment](docs/LIVE_DEPLOYMENT.md)
 - [Railway Deployment](docs/RAILWAY_DEPLOYMENT.md)
 
-Public deployments should use auth, exact CORS origins, persistent storage, and LLM disabled unless a reviewed backend-only Gemini key is configured.
+Recommended no-domain split:
+
+- Frontend: Vercel or Netlify free/static hosting.
+- Backend: Render or Railway web service.
+- Domain: use platform URLs; no custom domain required.
+
+GitHub Pages is not enough by itself because Aidssist has a FastAPI backend. Public deployments should use auth, exact CORS origins, persistent storage, and LLM disabled unless a reviewed backend-only Gemini key is configured. Free tiers may sleep or have usage limits, and persistent storage may require a paid plan.
 
 ## Release Candidate Status
 

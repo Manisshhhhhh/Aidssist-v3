@@ -2,7 +2,7 @@
 
 Aidssist v3 can be deployed for a live demo without buying a custom domain. Use the platform-provided URLs, such as `.onrender.com`, `.up.railway.app`, `.fly.dev`, `.vercel.app`, or `.netlify.app`.
 
-Recommended starting point: a full-enough demo on Render or Railway with user auth enabled, a strong JWT secret, LLM disabled by default, and persistent storage configured before uploading demo data.
+Recommended starting point: frontend on Vercel or Netlify, backend on Render, user auth enabled, a strong JWT secret, Gemini disabled by default, and persistent storage configured before uploading demo data. Railway is the full-stack fallback if Render service/disk limits get in the way.
 
 ## Deployment Profiles
 
@@ -47,14 +47,18 @@ This is not required for the current no-domain demo.
 
 Use platform-provided URLs:
 
-- Frontend: `https://your-frontend.onrender.com` or similar.
-- Backend: `https://your-backend.onrender.com` or similar.
+- Frontend: `https://your-frontend.vercel.app`, `https://your-frontend.netlify.app`, or similar.
+- Backend: `https://your-backend.onrender.com`, `https://your-backend.up.railway.app`, or similar.
 
 Then configure:
 
 - `VITE_API_BASE_URL=https://your-backend-url`
 - `AIDSSIST_CORS_ORIGINS=https://your-frontend-url`
+- `AIDSSIST_ENVIRONMENT=production`
 - `AIDSSIST_USER_AUTH_ENABLED=true`
+- `AIDSSIST_AUTH_ENABLED=false`
+- `AIDSSIST_LLM_ENABLED=false`
+- `AIDSSIST_STARTUP_PREFLIGHT_ENABLED=true`
 - `AIDSSIST_JWT_SECRET_KEY=<strong generated secret>`
 
 Generate a JWT secret locally:
@@ -64,6 +68,103 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
 Never put real secrets in GitHub. Set them only in the hosting provider dashboard.
+
+GitHub Pages is not enough for Aidssist v3 because the product has a FastAPI backend. GitHub Pages can only host static files. If you use a static frontend host such as Vercel or Netlify, the backend still needs to run separately on Render, Railway, Fly.io, or another API host.
+
+## Vercel Frontend + Render Backend
+
+This is the recommended free or low-cost split for a first no-domain demo.
+
+### Backend On Render
+
+1. In Render, create a new web service from `Manisshhhhhh/Aidssist-v3`.
+2. Use Docker with root directory `backend`.
+3. Use start command:
+
+   ```bash
+   ./scripts/start.sh
+   ```
+
+4. Set environment variables:
+
+   ```text
+   AIDSSIST_ENVIRONMENT=production
+   AIDSSIST_DATABASE_URL=sqlite:////data/aidssist.db
+   AIDSSIST_STORAGE_BACKEND=local
+   AIDSSIST_STORAGE_LOCAL_ROOT=/data/datasets
+   AIDSSIST_REPORTS_LOCAL_ROOT=/data/reports
+   AIDSSIST_BACKUP_DIR=/data/backups
+   AIDSSIST_USER_AUTH_ENABLED=true
+   AIDSSIST_JWT_SECRET_KEY=<generated secret>
+   AIDSSIST_AUTH_ENABLED=false
+   AIDSSIST_LLM_ENABLED=false
+   AIDSSIST_AUDIT_LOG_ENABLED=true
+   AIDSSIST_STARTUP_PREFLIGHT_ENABLED=true
+   ```
+
+5. If Render offers a persistent disk, mount it at `/data`.
+6. If persistent disk requires a paid plan, pause and decide whether this is a temporary demo or whether paid storage is acceptable.
+7. Deploy and test:
+
+   ```bash
+   curl -i https://your-backend.onrender.com/health
+   ```
+
+### Frontend On Vercel
+
+1. In Vercel, import the GitHub repo.
+2. Set root directory to `web`.
+3. Use:
+   - Build command: `npm run build`
+   - Output directory: `dist`
+4. Set:
+
+   ```text
+   VITE_API_BASE_URL=https://your-backend.onrender.com
+   ```
+
+5. Deploy the frontend.
+6. Copy the Vercel frontend URL.
+7. In Render backend env, set:
+
+   ```text
+   AIDSSIST_CORS_ORIGINS=https://your-frontend.vercel.app
+   ```
+
+8. Redeploy/restart the backend.
+9. Open the Vercel URL and confirm API status is online.
+
+## Netlify Frontend + Render Backend
+
+Use this if you prefer Netlify for static hosting.
+
+### Backend On Render
+
+Use the same Render backend steps above.
+
+### Frontend On Netlify
+
+1. In Netlify, create a new site from the GitHub repo.
+2. Set base directory to `web`.
+3. Use:
+   - Build command: `npm run build`
+   - Publish directory: `web/dist`
+4. Set:
+
+   ```text
+   VITE_API_BASE_URL=https://your-backend.onrender.com
+   ```
+
+5. Deploy the frontend.
+6. Copy the Netlify frontend URL.
+7. In Render backend env, set:
+
+   ```text
+   AIDSSIST_CORS_ORIGINS=https://your-frontend.netlify.app
+   ```
+
+8. Redeploy/restart the backend.
+9. Open the Netlify URL and confirm API status is online.
 
 ## Render Blueprint
 
@@ -75,6 +176,8 @@ This repo includes `render.yaml` for a practical Render starting point:
 The blueprint intentionally does not provision a separate worker because Render disks are not shared between services. Enable a worker only after moving job state and artifacts to shared managed services.
 
 After creating the backend, update the frontend `VITE_API_BASE_URL` to the backend `.onrender.com` URL and redeploy the frontend.
+
+The blueprint can be used for Render-only hosting, but Vercel/Netlify plus Render is often simpler for the frontend because Vite environment variables are configured directly in the frontend host.
 
 ## Manual Render Steps
 
@@ -133,6 +236,8 @@ For early demos, a platform-subdomain regex can be used, but production should u
 ## Pricing And Limits
 
 Verify current platform pricing before deployment. Free tiers can sleep, limit build minutes, limit storage, or restrict persistent disks/workers. Persistent storage often requires a paid plan.
+
+If you deploy without persistent storage, uploaded datasets and generated reports may disappear on restart/redeploy. That is acceptable only for a temporary throwaway demo and should not be called verified persistence.
 
 ## Gemini
 

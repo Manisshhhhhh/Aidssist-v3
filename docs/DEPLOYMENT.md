@@ -2,7 +2,7 @@
 
 Aidssist V3 can run as local development processes or as a Docker Compose deployment. The Docker setup is intended for reliable local demos and internal environments, not a public internet production deployment yet.
 
-For hosted demos on platform-provided URLs, see [Live Deployment](LIVE_DEPLOYMENT.md) and [Railway Deployment](RAILWAY_DEPLOYMENT.md). You do not need to buy a custom domain for a demo.
+For hosted demos on platform-provided URLs, see [Live Deployment](LIVE_DEPLOYMENT.md) and [Railway Deployment](RAILWAY_DEPLOYMENT.md). You do not need to buy a custom domain for a demo. Vercel or Netlify can host the frontend, but the FastAPI backend must run separately on Render, Railway, Fly.io, or a similar backend host.
 
 Generate production secrets locally and paste them only into your hosting provider dashboard:
 
