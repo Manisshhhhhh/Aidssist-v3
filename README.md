@@ -15,7 +15,7 @@ The product is intentionally deterministic first. LLM explanation layers can be 
 
 ## Security Warning
 
-Aidssist v3 RC1 is suitable for local demos and controlled internal evaluation. It is not ready for public internet deployment without production authentication hardening, TLS, managed database/object storage, backups, monitoring, and operational review.
+Aidssist v3 RC3 is suitable for local demos and controlled internal evaluation. It is not ready for public internet deployment without production authentication hardening, TLS, managed database/object storage, backups, monitoring, and operational review.
 
 Never commit real `.env` files, API keys, JWT secrets, databases, uploaded datasets, generated reports, backups, `node_modules`, or Python virtual environments. Gemini keys must stay server-side only; use a newly rotated `GEMINI_API_KEY` and never reuse keys pasted into chat history.
 
@@ -111,6 +111,10 @@ See [Release Candidate](docs/RELEASE_CANDIDATE.md) for the full RC verification 
 ## Release Candidate Status
 
 Aidssist V3 RC3 has passed Docker Desktop runtime verification on macOS, including Docker Compose build, backend health, frontend nginx, sync smoke, async worker smoke, restart persistence, fresh-volume startup, and fresh upload/report smoke. RC1 remains published and unchanged; RC2 added publication/runtime polish, and RC3 adds Docker signoff.
+
+## Screenshots
+
+Screenshots are intentionally not committed until final capture. Use [Screenshot Guide](docs/SCREENSHOT_GUIDE.md) to capture the upload page, dashboard, charts, forecast, ask-your-data chat, AI summary, report export, workspace/auth view, GitHub repo, and Docker/CI proof.
 
 ## Make Commands
 
@@ -408,3 +412,8 @@ S3-compatible storage settings are scaffolded for a future provider, but S3 is n
 - [Fail-Safe](docs/FAILSAFE.md)
 - [Backup And Restore](docs/BACKUP_RESTORE.md)
 - [Runbook](docs/RUNBOOK.md)
+- [Demo Script](docs/DEMO_SCRIPT.md)
+- [Launch Kit](docs/LAUNCH_KIT.md)
+- [Screenshot Guide](docs/SCREENSHOT_GUIDE.md)
+- [LinkedIn Post Drafts](docs/LINKEDIN_POST.md)
+- [Product One-Pager](docs/PRODUCT_ONE_PAGER.md)

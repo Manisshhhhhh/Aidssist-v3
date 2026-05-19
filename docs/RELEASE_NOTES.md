@@ -67,6 +67,14 @@ Completed in the local Codex environment:
 - RC3 includes CI/CD hardening, the manual Docker smoke workflow, the local doctor script, the release-check script, and Makefile/documentation improvements.
 - GitHub Actions status should be checked in the repository Actions tab after publishing.
 
+## Launch Kit
+
+- [Demo Script](DEMO_SCRIPT.md)
+- [Launch Kit Checklist](LAUNCH_KIT.md)
+- [Screenshot Guide](SCREENSHOT_GUIDE.md)
+- [LinkedIn Post Drafts](LINKEDIN_POST.md)
+- [Product One-Pager](PRODUCT_ONE_PAGER.md)
+
 ## Known Blockers
 
 - Existing local development DB is not Alembic-stamped and can show existing-table errors; fresh DB migration was verified.
