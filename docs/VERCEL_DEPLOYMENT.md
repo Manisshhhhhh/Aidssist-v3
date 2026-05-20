@@ -51,7 +51,8 @@ After Vercel deploys, copy the Vercel frontend URL.
 In Render backend environment variables, set:
 
 ```text
-AIDSSIST_CORS_ORIGINS=https://<your-vercel-project>.vercel.app
+AIDSSIST_CORS_ORIGINS=https://aidssist-v3.vercel.app
+AIDSSIST_CORS_ORIGIN_REGEX=^$
 ```
 
 Then restart or redeploy the Render backend.
@@ -63,6 +64,7 @@ AIDSSIST_CORS_ORIGINS=*
 ```
 
 For the final demo, use the exact Vercel URL instead of `*`.
+Do not leave wildcard CORS enabled for the hosted demo.
 
 ## Verify
 

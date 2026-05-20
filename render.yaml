@@ -46,7 +46,7 @@ services:
       - key: AIDSSIST_CORS_ORIGINS
         value: "https://aidssist-v3.vercel.app"
       - key: AIDSSIST_CORS_ORIGIN_REGEX
-        value: "^https://.*\\.(onrender\\.com|up\\.railway\\.app|fly\\.dev|vercel\\.app|netlify\\.app)$"
+        value: "^$"
 
   - type: web
     name: aidssist-v3-frontend
@@ -56,4 +56,4 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://replace-with-backend-url.onrender.com
+        value: https://aidssist-v3.onrender.com

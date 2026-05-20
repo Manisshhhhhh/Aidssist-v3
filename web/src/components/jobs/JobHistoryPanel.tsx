@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { getFriendlyApiErrorMessage } from "../../api/errors";
 import { listJobs } from "../../api/jobs";
 import type { JobResponse } from "../../types/jobs";
 import { Button } from "../ui/Button";
@@ -18,7 +19,7 @@ export function JobHistoryPanel({ workspaceId }: JobHistoryPanelProps) {
       setJobs(response.jobs);
       setError(null);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unable to load jobs.");
+      setError(getFriendlyApiErrorMessage(loadError, { fallback: "Unable to load jobs." }));
     }
   }, [workspaceId]);
 

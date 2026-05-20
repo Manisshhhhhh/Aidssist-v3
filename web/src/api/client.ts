@@ -3,6 +3,7 @@ import type { ApiError } from "../types/api";
 export const API_BASE_URL = resolveApiBaseUrl();
 const API_KEY = import.meta.env.VITE_AIDSSIST_API_KEY;
 export const AUTH_TOKEN_STORAGE_KEY = "aidssist_access_token";
+export const AUTH_REQUIRED_EVENT = "aidssist:auth-required";
 
 type RequestOptions = Omit<RequestInit, "body"> & {
   body?: BodyInit | Record<string, unknown> | null;
@@ -12,6 +13,8 @@ export class ApiClientError extends Error {
   status: number;
   requestId?: string | null;
   details?: unknown;
+  path?: string;
+  rawMessage: string;
 
   constructor(error: ApiError) {
     super(error.requestId ? `${error.message} Request ID: ${error.requestId}` : error.message);
@@ -19,6 +22,8 @@ export class ApiClientError extends Error {
     this.status = error.status;
     this.requestId = error.requestId;
     this.details = error.details;
+    this.path = error.path;
+    this.rawMessage = error.message;
   }
 }
 
@@ -48,6 +53,7 @@ export async function apiRequest<TResponse>(
       status: 0,
       message: "Unable to reach the Aidssist API. Check that the backend is running.",
       details: error,
+      path,
     });
   }
 
@@ -58,12 +64,17 @@ export async function apiRequest<TResponse>(
     const message =
       getErrorMessage(payload) || `Request failed with status ${response.status}`;
 
-    throw new ApiClientError({
+    const apiError = new ApiClientError({
       status: response.status,
       message,
       requestId,
       details: payload,
+      path,
     });
+    if (response.status === 401) {
+      notifyAuthRequired(path, message);
+    }
+    throw apiError;
   }
 
   return payload as TResponse;
@@ -88,18 +99,25 @@ export async function apiBlobRequest(
       status: 0,
       message: "Unable to reach the Aidssist API. Check that the backend is running.",
       details: error,
+      path,
     });
   }
 
   if (!response.ok) {
     const payload = await parseResponse(response);
     const requestId = response.headers.get("X-Request-ID") || getPayloadRequestId(payload);
-    throw new ApiClientError({
+    const message = getErrorMessage(payload) || `Request failed with status ${response.status}`;
+    const apiError = new ApiClientError({
       status: response.status,
-      message: getErrorMessage(payload) || `Request failed with status ${response.status}`,
+      message,
       requestId,
       details: payload,
+      path,
     });
+    if (response.status === 401) {
+      notifyAuthRequired(path, message);
+    }
+    throw apiError;
   }
 
   return response.blob();
@@ -132,6 +150,21 @@ export function setStoredAccessToken(token: string): void {
 
 export function clearStoredAccessToken(): void {
   window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+}
+
+function notifyAuthRequired(path: string, message: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent(AUTH_REQUIRED_EVENT, {
+      detail: {
+        path: normalizePath(path),
+        message,
+      },
+    }),
+  );
 }
 
 function resolveApiBaseUrl(): string {

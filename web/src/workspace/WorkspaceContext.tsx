@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import { createWorkspace as createWorkspaceRequest, listWorkspaces } from "../api/workspaces";
+import { getFriendlyApiErrorMessage } from "../api/errors";
 import { useAuth } from "../auth/useAuth";
 import type { Workspace } from "../types/workspace";
 
@@ -59,7 +60,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         return nextId;
       });
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unable to load workspaces.");
+      setError(getFriendlyApiErrorMessage(loadError, { fallback: "Unable to load workspaces." }));
     } finally {
       setIsLoading(false);
     }

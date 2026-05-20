@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SendHorizontal } from "lucide-react";
+import { Loader2, SendHorizontal } from "lucide-react";
 
 import { Button } from "../ui/Button";
 
@@ -52,8 +52,17 @@ export function ChatInput({ disabled = false, onSend }: ChatInputProps) {
           value={message}
         />
         <Button className="self-start" disabled={disabled} onClick={submitMessage}>
-          <SendHorizontal size={18} aria-hidden="true" />
-          Send
+          {disabled ? (
+            <>
+              <Loader2 className="animate-spin" size={18} aria-hidden="true" />
+              Sending
+            </>
+          ) : (
+            <>
+              <SendHorizontal size={18} aria-hidden="true" />
+              Send
+            </>
+          )}
         </Button>
       </div>
       <div className="mt-2 flex items-center justify-between gap-3 text-xs">

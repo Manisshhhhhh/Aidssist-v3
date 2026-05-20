@@ -3,6 +3,7 @@ import { motion, type Variants } from "framer-motion";
 import { AlertCircle, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
 
 import { analyzeDataset } from "../api/analysis";
+import { getFriendlyApiErrorMessage } from "../api/errors";
 import { AiSummaryPanel } from "../components/ai/AiSummaryPanel";
 import { BrandMark } from "../components/brand/BrandMark";
 import { ChartsPanel } from "../components/charts/ChartsPanel";
@@ -169,11 +170,7 @@ function AnalysisLoading() {
 }
 
 function getAnalysisErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Unable to analyze this dataset.";
+  return getFriendlyApiErrorMessage(error, { fallback: "Unable to analyze this dataset." });
 }
 
 const dashboardSectionGroup: Variants = {

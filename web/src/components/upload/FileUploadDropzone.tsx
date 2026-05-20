@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, FileUp, Loader2, UploadCloud } from "lucide-react";
 
 import { uploadDataset } from "../../api/datasets";
+import { getFriendlyApiErrorMessage } from "../../api/errors";
 import type { DatasetMetadata } from "../../types/dataset";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
@@ -169,9 +170,8 @@ function formatFileSize(bytes: number): string {
 }
 
 function getUploadErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Upload failed. Try again with a valid CSV or Excel .xlsx file.";
+  return getFriendlyApiErrorMessage(error, {
+    fallback: "Upload failed. Try again with a valid CSV or Excel .xlsx file.",
+    unsupportedFile: true,
+  });
 }

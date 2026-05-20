@@ -1,6 +1,7 @@
 import { ExternalLink, FileCheck2 } from "lucide-react";
 import { useState } from "react";
 
+import { getFriendlyApiErrorMessage } from "../../api/errors";
 import { downloadReport } from "../../api/report";
 import type { ReportResponse } from "../../types/report";
 import { Button } from "../ui/Button";
@@ -20,7 +21,7 @@ export function ReportResult({ report }: ReportResultProps) {
       window.open(objectUrl, "_blank", "noopener,noreferrer");
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
     } catch (downloadError) {
-      setError(downloadError instanceof Error ? downloadError.message : "Unable to open report.");
+      setError(getFriendlyApiErrorMessage(downloadError, { fallback: "Unable to open report." }));
     }
   }
 

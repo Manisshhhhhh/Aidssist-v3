@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { getFriendlyApiErrorMessage } from "../api/errors";
 import { getJob } from "../api/jobs";
 import type { JobResponse } from "../types/jobs";
 
@@ -36,7 +37,7 @@ export function useJobPolling(jobId: string | null, intervalMs = 2000) {
         }
       } catch (pollError) {
         if (cancelled) return;
-        setError(pollError instanceof Error ? pollError.message : "Unable to load job status.");
+        setError(getFriendlyApiErrorMessage(pollError, { fallback: "Unable to load job status." }));
         setIsPolling(false);
       }
     }

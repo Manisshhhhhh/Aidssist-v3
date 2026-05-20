@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { AlertCircle, UserPlus } from "lucide-react";
 
+import { getFriendlyApiErrorMessage } from "../../api/errors";
 import { useAuth } from "../../auth/useAuth";
 import { Button } from "../ui/Button";
 
@@ -27,7 +28,7 @@ export function RegisterForm({ onShowLogin }: RegisterFormProps) {
     try {
       await register({ email, password, full_name: fullName });
     } catch (registerError) {
-      setError(registerError instanceof Error ? registerError.message : "Unable to create account.");
+      setError(getFriendlyApiErrorMessage(registerError, { fallback: "Unable to create account." }));
     } finally {
       setIsSubmitting(false);
     }

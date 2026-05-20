@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Loader2, WifiOff } from "lucide-react";
+import { CheckCircle2, Loader2, ShieldAlert, WifiOff } from "lucide-react";
 
-import { API_BASE_URL, apiRequest } from "../../api/client";
+import { API_BASE_URL, ApiClientError, apiRequest } from "../../api/client";
 import type { HealthResponse } from "../../types/api";
 
-type ApiStatus = "checking" | "online" | "offline";
+type ApiStatus = "checking" | "online" | "restricted" | "offline";
 
 export function ApiStatusBadge() {
   const [status, setStatus] = useState<ApiStatus>("checking");
@@ -23,9 +23,11 @@ export function ApiStatusBadge() {
         if (isMounted) {
           setStatus("online");
         }
-      } catch {
+      } catch (error) {
         if (isMounted) {
-          setStatus("offline");
+          setStatus(
+            error instanceof ApiClientError && error.status === 401 ? "restricted" : "offline",
+          );
         }
       }
     }
@@ -52,6 +54,11 @@ export function ApiStatusBadge() {
       icon: <CheckCircle2 size={13} aria-hidden="true" />,
       className: "border-success/30 bg-success/10 text-success",
     },
+    restricted: {
+      label: "Auth Required",
+      icon: <ShieldAlert size={13} aria-hidden="true" />,
+      className: "border-warning/30 bg-warning/10 text-on-surface",
+    },
     offline: {
       label: "API Offline",
       icon: <WifiOff size={13} aria-hidden="true" />,
@@ -69,7 +76,11 @@ export function ApiStatusBadge() {
         setStatus("checking");
         void apiRequest<HealthResponse>("/health")
           .then(() => setStatus("online"))
-          .catch(() => setStatus("offline"));
+          .catch((error) =>
+            setStatus(
+              error instanceof ApiClientError && error.status === 401 ? "restricted" : "offline",
+            ),
+          );
       }}
       title={`API: ${API_BASE_URL}`}
       type="button"

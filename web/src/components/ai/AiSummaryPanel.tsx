@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AlertCircle, Loader2, Sparkles } from "lucide-react";
 
+import { getFriendlyApiErrorMessage } from "../../api/errors";
 import { createAiSummary } from "../../api/llm";
 import { useAuth } from "../../auth/useAuth";
 import type { AnalysisResponse } from "../../types/analysis";
@@ -43,7 +44,7 @@ export function AiSummaryPanel({ analysis, datasetId }: AiSummaryPanelProps) {
     try {
       setSummary(await createAiSummary(datasetId, options));
     } catch (summaryError) {
-      setError(summaryError instanceof Error ? summaryError.message : "Unable to generate AI summary.");
+      setError(getFriendlyApiErrorMessage(summaryError, { fallback: "Unable to generate AI summary." }));
     } finally {
       setIsGenerating(false);
     }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, Loader2 } from "lucide-react";
 
+import { getFriendlyApiErrorMessage } from "../../api/errors";
 import { createForecast } from "../../api/forecast";
 import type { AnalysisResponse, ColumnProfile } from "../../types/analysis";
 import type { ForecastRequest, ForecastResponse } from "../../types/forecast";
@@ -219,9 +220,7 @@ function withCollapsedBandWarning(forecast: ForecastResponse): string[] {
 }
 
 function getForecastErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Unable to generate a forecast for this dataset.";
+  return getFriendlyApiErrorMessage(error, {
+    fallback: "Unable to generate a forecast for this dataset.",
+  });
 }

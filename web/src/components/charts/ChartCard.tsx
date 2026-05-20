@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, Loader2, Maximize2, RefreshCw } from "lucide-react";
 
 import { getChartData } from "../../api/charts";
+import { getFriendlyApiErrorMessage } from "../../api/errors";
 import type { RecommendedChart } from "../../types/analysis";
 import type { ChartDataResponse, ChartTimeRange } from "../../types/charts";
 import { Badge } from "../ui/Badge";
@@ -33,7 +34,7 @@ export function ChartCard({ datasetId, chart }: ChartCardProps) {
     try {
       setChartData(await getChartData(datasetId, chart.chart_id, supportsTimeRange ? timeRange : "all"));
     } catch (chartError) {
-      setError(chartError instanceof Error ? chartError.message : "Unable to load chart data.");
+      setError(getFriendlyApiErrorMessage(chartError, { fallback: "Unable to load chart data." }));
     } finally {
       setIsLoading(false);
     }

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, CalendarClock, Database, RefreshCw, Rows3, Trash2 } from "lucide-react";
 
 import { deleteDataset, listDatasets } from "../../api/datasets";
+import { getFriendlyApiErrorMessage } from "../../api/errors";
 import type { DatasetMetadata } from "../../types/dataset";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
@@ -217,17 +218,9 @@ function formatDate(value: string): string {
 }
 
 function getLoadErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Unable to load datasets.";
+  return getFriendlyApiErrorMessage(error, { fallback: "Unable to load datasets." });
 }
 
 function getDeleteErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Unable to delete this dataset.";
+  return getFriendlyApiErrorMessage(error, { fallback: "Unable to delete this dataset." });
 }

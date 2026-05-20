@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 
+import { getFriendlyApiErrorMessage } from "../../api/errors";
 import { askDataset } from "../../api/chat";
 import type { AnalysisResponse } from "../../types/analysis";
 import type { ChatMessage } from "../../types/chat";
@@ -67,7 +68,9 @@ export function AskDataPanel({ analysis, datasetId }: AskDataPanelProps) {
                 id: loadingMessage.id,
                 role: "assistant",
                 content: "I could not answer that question.",
-                error: error instanceof Error ? error.message : "Unable to reach the chat endpoint.",
+                error: getFriendlyApiErrorMessage(error, {
+                  fallback: "Unable to reach the chat endpoint.",
+                }),
               }
             : message,
         ),

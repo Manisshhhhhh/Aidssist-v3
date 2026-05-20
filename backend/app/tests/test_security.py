@@ -61,6 +61,8 @@ def test_security_headers_exist_on_responses(client: TestClient) -> None:
     assert response.headers["X-Frame-Options"] == "DENY"
     assert response.headers["Referrer-Policy"] == "no-referrer"
     assert "camera=()" in response.headers["Permissions-Policy"]
+    assert response.headers["Strict-Transport-Security"] == "max-age=31536000; includeSubDomains"
+    assert "frame-ancestors 'none'" in response.headers["Content-Security-Policy"]
 
 
 def test_frontend_cors_defaults_include_dev_and_docker_origins() -> None:

@@ -54,6 +54,7 @@ Then configure:
 
 - `VITE_API_BASE_URL=https://your-backend-url`
 - `AIDSSIST_CORS_ORIGINS=https://your-frontend-url`
+- `AIDSSIST_CORS_ORIGIN_REGEX=^$` for the fixed hosted deployment
 - `AIDSSIST_ENVIRONMENT=production`
 - `AIDSSIST_USER_AUTH_ENABLED=true`
 - `AIDSSIST_AUTH_ENABLED=false`
@@ -238,18 +239,32 @@ AIDSSIST_CORS_ORIGINS=https://your-frontend.onrender.com
 For Vercel:
 
 ```text
-AIDSSIST_CORS_ORIGINS=https://<your-vercel-project>.vercel.app
+AIDSSIST_CORS_ORIGINS=https://aidssist-v3.vercel.app
+AIDSSIST_CORS_ORIGIN_REGEX=^$
 ```
 
-Temporary testing-only CORS can be:
+Temporary testing-only CORS for disposable local diagnostics can be:
 
 ```text
 AIDSSIST_CORS_ORIGINS=*
 ```
 
-For the final demo, use the exact Vercel URL instead of `*`.
+For the final demo, use the exact Vercel URL instead of `*`. Render should be set to `AIDSSIST_CORS_ORIGINS=https://aidssist-v3.vercel.app` with `AIDSSIST_CORS_ORIGIN_REGEX=^$`.
 
-For early demos, a platform-subdomain regex can be used, but production should use exact allowed origins.
+For early demos, a platform-subdomain regex can be used only temporarily. Production should use exact allowed origins.
+
+## Production Security Headers
+
+The backend emits baseline hardening headers on all API responses:
+
+- `Strict-Transport-Security`
+- `X-Frame-Options`
+- `X-Content-Type-Options`
+- `Referrer-Policy`
+- `Permissions-Policy`
+- `Content-Security-Policy`
+
+The Vercel frontend mirrors those headers in `web/vercel.json`. If the backend host changes, update the frontend CSP `connect-src` entry alongside `VITE_API_BASE_URL`.
 
 ## Pricing And Limits
 

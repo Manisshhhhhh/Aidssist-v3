@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AlertCircle, FileText, Loader2 } from "lucide-react";
 
+import { getFriendlyApiErrorMessage } from "../../api/errors";
 import { createReport, createReportJob } from "../../api/report";
 import type { AnalysisResponse } from "../../types/analysis";
 import type { JobResponse } from "../../types/jobs";
@@ -55,7 +56,7 @@ export function ReportPanel({ analysis, datasetId }: ReportPanelProps) {
       }
       setReport(await createReport(datasetId, options));
     } catch (reportError) {
-      setError(reportError instanceof Error ? reportError.message : "Unable to generate report.");
+      setError(getFriendlyApiErrorMessage(reportError, { fallback: "Unable to generate report." }));
     } finally {
       setIsGenerating(false);
     }
@@ -108,6 +109,13 @@ export function ReportPanel({ analysis, datasetId }: ReportPanelProps) {
             </div>
           ) : null}
 
+          {isGenerating ? (
+            <div className="flex items-start gap-3 rounded-xl border border-outline bg-surface1 p-4 text-sm text-on-surface-muted">
+              <Loader2 className="mt-0.5 shrink-0 animate-spin text-primary-light" size={18} aria-hidden="true" />
+              <p>{generateInBackground ? "Starting report job." : "Generating report package."}</p>
+            </div>
+          ) : null}
+
           {jobId ? (
             <JobStatusCard error={jobError} job={job} title="Report generation job" />
           ) : null}
@@ -122,7 +130,7 @@ export function ReportPanel({ analysis, datasetId }: ReportPanelProps) {
 
           <Button disabled={isGenerating} onClick={() => void handleGenerateReport()}>
             {isGenerating ? <Loader2 className="animate-spin" size={18} aria-hidden="true" /> : null}
-            Generate report
+            {isGenerating ? "Generating report" : "Generate report"}
           </Button>
         </div>
       ) : null}

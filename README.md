@@ -142,7 +142,8 @@ VITE_API_BASE_URL=https://aidssist-v3.onrender.com
 Render backend CORS after Vercel deploys:
 
 ```text
-AIDSSIST_CORS_ORIGINS=https://<your-vercel-project>.vercel.app
+AIDSSIST_CORS_ORIGINS=https://aidssist-v3.vercel.app
+AIDSSIST_CORS_ORIGIN_REGEX=^$
 ```
 
 GitHub Pages is not enough by itself because Aidssist has a FastAPI backend. Public deployments should use auth, exact CORS origins, persistent storage, and LLM disabled unless a reviewed backend-only Gemini key is configured. Free tiers may sleep or have usage limits, and persistent storage may require a paid plan.
@@ -273,8 +274,22 @@ Backend variables use the `AIDSSIST_` prefix:
 - `AIDSSIST_REPORTS_LOCAL_ROOT`: local reports root. Default: `./reports`.
 - `AIDSSIST_S3_BUCKET`, `AIDSSIST_S3_REGION`, `AIDSSIST_S3_ENDPOINT_URL`, `AIDSSIST_S3_ACCESS_KEY_ID`, `AIDSSIST_S3_SECRET_ACCESS_KEY`, `AIDSSIST_S3_PREFIX`: future S3-compatible storage settings.
 - `AIDSSIST_CORS_ORIGINS`: optional configured frontend origins.
+- `AIDSSIST_CORS_ORIGIN_REGEX`: optional regex for development/preview origins.
 - `AIDSSIST_DATASETS_DIR`: optional local dataset storage directory.
 - `AIDSSIST_REPORTS_DIR`: optional local report storage directory.
+
+Production frontend/backend split:
+
+```text
+AIDSSIST_ENVIRONMENT=production
+AIDSSIST_USER_AUTH_ENABLED=true
+AIDSSIST_AUTH_ENABLED=false
+AIDSSIST_CORS_ORIGINS=https://aidssist-v3.vercel.app
+AIDSSIST_CORS_ORIGIN_REGEX=^$
+VITE_API_BASE_URL=https://aidssist-v3.onrender.com
+```
+
+Do not use `AIDSSIST_CORS_ORIGINS=*` for the hosted demo or production. Wildcard CORS is only acceptable for short local diagnostics against disposable environments.
 
 Default local storage:
 

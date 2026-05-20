@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { AlertCircle, LogIn } from "lucide-react";
 
+import { getFriendlyApiErrorMessage } from "../../api/errors";
 import { useAuth } from "../../auth/useAuth";
 import { Button } from "../ui/Button";
 
@@ -22,7 +23,7 @@ export function LoginForm({ onShowRegister }: LoginFormProps) {
     try {
       await login({ email, password });
     } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : "Unable to sign in.");
+      setError(getFriendlyApiErrorMessage(loginError, { fallback: "Unable to sign in." }));
     } finally {
       setIsSubmitting(false);
     }

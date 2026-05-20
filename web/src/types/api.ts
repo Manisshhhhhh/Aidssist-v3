@@ -3,6 +3,7 @@ export type ApiError = {
   message: string;
   requestId?: string | null;
   details?: unknown;
+  path?: string;
 };
 
 export type HealthResponse = {

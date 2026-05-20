@@ -6,7 +6,11 @@ import { LoginForm } from "../components/auth/LoginForm";
 import { RegisterForm } from "../components/auth/RegisterForm";
 import { Card } from "../components/ui/Card";
 
-export function AuthPage() {
+type AuthPageProps = {
+  notice?: string | null;
+};
+
+export function AuthPage({ notice }: AuthPageProps) {
   const [mode, setMode] = useState<"login" | "register">("login");
 
   return (
@@ -28,6 +32,12 @@ export function AuthPage() {
       </div>
 
       <Card>
+        {notice ? (
+          <div className="mb-5 rounded-xl border border-warning/25 bg-warning/10 px-4 py-3 text-sm font-medium text-on-surface">
+            {notice}
+          </div>
+        ) : null}
+
         <div className="mb-6 flex items-start gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary-light">
             <ShieldCheck size={21} aria-hidden="true" />

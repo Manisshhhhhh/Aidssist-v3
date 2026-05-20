@@ -5,7 +5,7 @@ import { AuthPage } from "../../pages/AuthPage";
 import { Card } from "../ui/Card";
 
 export function AuthGate({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isLoading, status } = useAuth();
+  const { authRequiredMessage, isAuthenticated, isLoading, status } = useAuth();
 
   if (isLoading) {
     return (
@@ -17,7 +17,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   }
 
   if (status?.user_auth_enabled && !isAuthenticated) {
-    return <AuthPage />;
+    return <AuthPage notice={authRequiredMessage} />;
   }
 
   return <>{children}</>;

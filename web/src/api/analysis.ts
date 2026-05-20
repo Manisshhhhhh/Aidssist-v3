@@ -1,4 +1,5 @@
 import { apiRequest } from "./client";
+import { isReachabilityError } from "./errors";
 import type { AnalysisResponse } from "../types/analysis";
 
 export async function analyzeDataset(datasetId: string): Promise<AnalysisResponse> {
@@ -18,10 +19,6 @@ export async function analyzeDataset(datasetId: string): Promise<AnalysisRespons
   }
 
   throw lastError instanceof Error ? lastError : new Error("Unable to analyze this dataset.");
-}
-
-function isReachabilityError(error: unknown): boolean {
-  return error instanceof Error && error.message.includes("Unable to reach the Aidssist API");
 }
 
 function delay(milliseconds: number): Promise<void> {
