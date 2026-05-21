@@ -6,7 +6,7 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 
 from app.models.dataset_models import DatasetMetadata
-from app.db.models import DatasetRecord
+from app.db.models import AnalysisRecord, DatasetRecord
 from app.db.session import new_session
 from app.repositories.workspace_repository import get_or_create_default_workspace
 
@@ -108,6 +108,7 @@ def delete_dataset_record(dataset_id: str) -> bool:
 
 def metadata_from_record(record: DatasetRecord) -> DatasetMetadata:
     columns = json.loads(record.columns_json) if record.columns_json else []
+    last_analyzed_at = get_last_analyzed_at(record.dataset_id)
     return DatasetMetadata(
         dataset_id=record.dataset_id,
         workspace_id=record.workspace_id,
@@ -119,7 +120,31 @@ def metadata_from_record(record: DatasetRecord) -> DatasetMetadata:
         row_count=record.row_count,
         column_count=record.column_count,
         columns=columns,
+        last_analyzed_at=last_analyzed_at,
     )
+
+
+def get_last_analyzed_at(dataset_id: str):
+    session = new_session()
+    try:
+        record = session.query(AnalysisRecord).filter(AnalysisRecord.dataset_id == dataset_id).one_or_none()
+        return record.updated_at if record is not None else None
+    finally:
+        session.close()
+
+
+def rename_dataset_record(dataset_id: str, original_filename: str) -> DatasetRecord | None:
+    session = new_session()
+    try:
+        record = session.query(DatasetRecord).filter(DatasetRecord.dataset_id == dataset_id).one_or_none()
+        if record is None:
+            return None
+        record.original_filename = original_filename
+        session.commit()
+        session.refresh(record)
+        return record
+    finally:
+        session.close()
 
 
 def upsert_dataset_with_session(

@@ -189,6 +189,7 @@ def build_report_payload(
             "file_size_bytes": metadata.file_size_bytes,
             "content_type": metadata.content_type,
             "created_at": metadata.created_at.isoformat(),
+            "last_analyzed_at": metadata.last_analyzed_at.isoformat() if metadata.last_analyzed_at else None,
             "row_count": metadata.row_count,
             "column_count": metadata.column_count,
             "columns": metadata.columns or [],
@@ -348,8 +349,14 @@ def render_html_report(payload: dict[str, Any]) -> str:
       {metric_card("Rows", dataset.get("row_count"))}
       {metric_card("Columns", dataset.get("column_count"))}
       {metric_card("File size", format_bytes(dataset.get("file_size_bytes")))}
-      {metric_card("Quality", f'{quality.get("quality_score", "n/a")}/100')}
+      {metric_card("Quality", f'{quality.get("quality_score", "n/a")}/100 · {quality_label(quality.get("quality_score"))}')}
     </div>
+    <h3>Metadata</h3>
+    {key_value_table([
+        ("Uploaded", dataset.get("created_at")),
+        ("Last analyzed", dataset.get("last_analyzed_at")),
+        ("Content type", dataset.get("content_type")),
+    ])}
     <h3>Columns</h3>
     <p>{''.join(f'<span class="pill">{e(column)}</span>' for column in dataset.get("columns", []))}</p>
   </section>
@@ -363,7 +370,13 @@ def render_html_report(payload: dict[str, Any]) -> str:
         ("Duplicate percent", percent_value(quality.get("duplicate_percent"))),
         ("Empty columns", join_values(quality.get("empty_columns"))),
         ("Constant columns", join_values(quality.get("constant_columns"))),
+        ("Unclear type columns", join_values(quality.get("invalid_type_columns"))),
+        ("High-cardinality columns", join_values(quality.get("high_cardinality_columns"))),
+        ("Date parsing issues", join_values(quality.get("date_parse_issue_columns"))),
+        ("Outlier columns", join_values(quality.get("outlier_columns"))),
     ])}
+    <h3>Issue Breakdown</h3>
+    {quality_issue_table(quality.get("issue_breakdown", []))}
   </section>
 
   <section>
@@ -407,6 +420,16 @@ def metric_card(label: str, value: Any) -> str:
 def key_value_table(rows: list[tuple[str, Any]]) -> str:
     body = "".join(f"<tr><th>{e(label)}</th><td>{e(format_value(value))}</td></tr>" for label, value in rows)
     return f"<table><tbody>{body}</tbody></table>"
+
+
+def quality_issue_table(issues: list[dict[str, Any]]) -> str:
+    if not issues:
+        return '<p class="notice">No material quality issues were detected.</p>'
+    rows = "".join(
+        f"<tr><td>{e(item.get('severity'))}</td><td>{e(item.get('title'))}</td><td>{e(item.get('message'))}</td><td>{e(join_values(item.get('columns')))}</td></tr>"
+        for item in issues
+    )
+    return f"<table><thead><tr><th>Severity</th><th>Issue</th><th>Message</th><th>Columns</th></tr></thead><tbody>{rows}</tbody></table>"
 
 
 def insights_table(insights: list[dict[str, Any]]) -> str:
@@ -568,6 +591,18 @@ def format_bytes(value: Any) -> str:
     if value < 1024 * 1024:
         return f"{value / 1024:.1f} KB"
     return f"{value / (1024 * 1024):.1f} MB"
+
+
+def quality_label(score: Any) -> str:
+    if not isinstance(score, int):
+        return "Unknown"
+    if score >= 90:
+        return "Excellent"
+    if score >= 75:
+        return "Good"
+    if score >= 60:
+        return "Fair"
+    return "Poor"
 
 
 def json_safe(value: Any) -> Any:

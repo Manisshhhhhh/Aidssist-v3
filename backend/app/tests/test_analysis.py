@@ -168,3 +168,27 @@ def test_analysis_response_includes_recommended_charts_and_insights(client: Test
     assert "insights" in analysis
     assert isinstance(analysis["insights"], list)
     assert analysis["insights"]
+
+
+def test_quality_score_includes_issue_breakdown(client: TestClient) -> None:
+    rows = ["date,value,category"]
+    for index in range(1, 26):
+        date = "not-a-date" if index == 13 else f"2026-01-{index:02d}"
+        value = 1000 if index == 25 else index
+        rows.append(f"{date},{value},category-{index}")
+    response = client.post(
+        "/upload",
+        files={"file": ("quality.csv", "\n".join(rows).encode("utf-8"), "text/csv")},
+    )
+    dataset_id = response.json()["dataset_id"]
+
+    analysis_response = client.post(f"/datasets/{dataset_id}/analyze")
+
+    assert analysis_response.status_code == 200
+    quality = analysis_response.json()["quality"]
+    issue_types = {issue["type"] for issue in quality["issue_breakdown"]}
+    assert quality["quality_score"] < 100
+    assert "date" in quality["date_parse_issue_columns"]
+    assert "category" in quality["high_cardinality_columns"]
+    assert "value" in quality["outlier_columns"]
+    assert {"date_parse_issues", "high_cardinality", "outliers"}.issubset(issue_types)

@@ -34,6 +34,17 @@ def sanitize_filename(filename: Optional[str]) -> str:
     return safe_name or "uploaded.csv"
 
 
+def sanitize_display_filename(filename: str) -> str:
+    safe_name = Path(filename).name.strip()
+    safe_name = re.sub(r"[\r\n\t]+", " ", safe_name)
+    safe_name = re.sub(r"\s{2,}", " ", safe_name).strip()
+    if not safe_name:
+        raise DatasetValidationError("Dataset name cannot be empty.")
+    if len(safe_name) > 512:
+        raise DatasetValidationError("Dataset name must be 512 characters or fewer.")
+    return safe_name
+
+
 def validate_dataset_filename(filename: Optional[str]) -> str:
     safe_name = sanitize_filename(filename)
     if Path(safe_name).suffix.lower() not in SUPPORTED_EXTENSIONS:
@@ -165,6 +176,20 @@ def get_dataset(dataset_id: str) -> Optional[DatasetMetadata]:
     if record is not None:
         return dataset_repository.metadata_from_record(record)
     return storage_service.load_metadata(dataset_id)
+
+
+def rename_dataset(dataset_id: str, original_filename: str) -> Optional[DatasetMetadata]:
+    safe_name = sanitize_display_filename(original_filename)
+    metadata = get_dataset(dataset_id)
+    if metadata is None:
+        return None
+
+    metadata.original_filename = safe_name
+    storage_service.save_metadata(metadata)
+    record = dataset_repository.rename_dataset_record(dataset_id, safe_name)
+    if record is not None:
+        return dataset_repository.metadata_from_record(record)
+    return metadata
 
 
 def delete_dataset(dataset_id: str) -> bool:

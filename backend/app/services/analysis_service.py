@@ -47,6 +47,8 @@ def analyze_dataset(dataset_id: str) -> AnalysisResult:
         correlations=analysis.correlations,
     )
     analysis.recommended_charts = recommend_charts(analysis)
+    metadata.last_analyzed_at = analysis.created_at
+    storage_service.save_metadata(metadata)
     analysis_path = storage_service.save_analysis(analysis)
     upsert_analysis(analysis, analysis_path)
     artifact_service.record_path_artifact(

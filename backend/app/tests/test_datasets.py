@@ -42,6 +42,7 @@ def test_get_dataset_detail_returns_metadata(client: TestClient) -> None:
     assert payload["row_count"] == 2
     assert payload["column_count"] == 3
     assert payload["columns"] == ["date", "sales", "region"]
+    assert payload["last_analyzed_at"] is None
 
 
 def test_get_dataset_detail_returns_404_for_unknown_id(client: TestClient) -> None:
@@ -79,3 +80,32 @@ def test_delete_dataset_returns_404_for_unknown_id(client: TestClient) -> None:
 
     assert response.status_code == 404
     assert "was not found" in response.json()["detail"]
+
+
+def test_rename_dataset_updates_metadata_and_list(client: TestClient) -> None:
+    upload_response = upload_csv(client)
+    dataset_id = upload_response.json()["dataset_id"]
+
+    rename_response = client.patch(
+        f"/datasets/{dataset_id}",
+        json={"original_filename": "Q1 sales review"},
+    )
+
+    assert rename_response.status_code == 200
+    assert rename_response.json()["original_filename"] == "Q1 sales review"
+    detail_response = client.get(f"/datasets/{dataset_id}")
+    list_response = client.get("/datasets")
+    assert detail_response.json()["original_filename"] == "Q1 sales review"
+    assert list_response.json()[0]["original_filename"] == "Q1 sales review"
+
+
+def test_dataset_list_includes_last_analyzed_timestamp(client: TestClient) -> None:
+    upload_response = upload_csv(client)
+    dataset_id = upload_response.json()["dataset_id"]
+
+    analyze_response = client.post(f"/datasets/{dataset_id}/analyze")
+    list_response = client.get("/datasets")
+
+    assert analyze_response.status_code == 200
+    assert list_response.status_code == 200
+    assert list_response.json()[0]["last_analyzed_at"] is not None

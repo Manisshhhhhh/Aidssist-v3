@@ -12,6 +12,7 @@ from app.models.analysis_models import (
     ColumnProfile,
     CorrelationResult,
     DataQuality,
+    DataQualityIssue,
 )
 
 
@@ -133,6 +134,8 @@ def build_column_stats(series: pd.Series, semantic_type: str) -> dict[str, Any]:
 
     if semantic_type == "datetime":
         parsed = pd.to_datetime(series, errors="coerce")
+        non_null = series.dropna()
+        invalid_parse_count = int(parsed.isna().sum() - series.isna().sum())
         min_date = parsed.min()
         max_date = parsed.max()
         range_days = None
@@ -142,6 +145,8 @@ def build_column_stats(series: pd.Series, semantic_type: str) -> dict[str, Any]:
             "min_date": to_json_safe(min_date),
             "max_date": to_json_safe(max_date),
             "range_days": range_days,
+            "invalid_parse_count": max(invalid_parse_count, 0),
+            "invalid_parse_percent": round_percent(max(invalid_parse_count, 0), len(non_null)),
         }
 
     if semantic_type in {"categorical", "boolean"}:
@@ -188,6 +193,22 @@ def build_quality_profile(dataframe: pd.DataFrame, columns: list[ColumnProfile])
         for column in columns
         if column.unique_count == 1 and column.missing_count < row_count
     ]
+    invalid_type_columns = [column.name for column in columns if column.semantic_type == "unknown"]
+    high_cardinality_columns = [
+        column.name
+        for column in columns
+        if column.semantic_type in {"categorical", "text"} and column.unique_percent >= 80 and column.unique_count > 20
+    ]
+    date_parse_issue_columns = [
+        column.name
+        for column in columns
+        if column.semantic_type == "datetime" and int(column.stats.get("invalid_parse_count") or 0) > 0
+    ]
+    outlier_columns = [
+        column.name
+        for column in columns
+        if column.semantic_type == "numeric" and count_iqr_outliers(pd.to_numeric(dataframe[column.name], errors="coerce").dropna()) > 0
+    ]
 
     score = 100
     score -= min(30, missing_percent * 0.3)
@@ -196,6 +217,27 @@ def build_quality_profile(dataframe: pd.DataFrame, columns: list[ColumnProfile])
         score -= 10
     if constant_columns:
         score -= 10
+    if invalid_type_columns:
+        score -= min(12, len(invalid_type_columns) * 4)
+    if high_cardinality_columns:
+        score -= min(10, len(high_cardinality_columns) * 2)
+    if date_parse_issue_columns:
+        score -= min(12, len(date_parse_issue_columns) * 4)
+    if outlier_columns:
+        score -= min(10, len(outlier_columns) * 2)
+
+    issue_breakdown = build_quality_issues(
+        missing_cells=missing_cells,
+        missing_percent=missing_percent,
+        duplicate_rows=duplicate_rows,
+        duplicate_percent=duplicate_percent,
+        empty_columns=empty_columns,
+        constant_columns=constant_columns,
+        invalid_type_columns=invalid_type_columns,
+        high_cardinality_columns=high_cardinality_columns,
+        date_parse_issue_columns=date_parse_issue_columns,
+        outlier_columns=outlier_columns,
+    )
 
     return DataQuality(
         missing_cells=missing_cells,
@@ -204,8 +246,127 @@ def build_quality_profile(dataframe: pd.DataFrame, columns: list[ColumnProfile])
         duplicate_percent=duplicate_percent,
         empty_columns=empty_columns,
         constant_columns=constant_columns,
+        invalid_type_columns=invalid_type_columns,
+        high_cardinality_columns=high_cardinality_columns,
+        date_parse_issue_columns=date_parse_issue_columns,
+        outlier_columns=outlier_columns,
+        issue_breakdown=issue_breakdown,
         quality_score=max(0, min(100, int(round(score)))),
     )
+
+
+def build_quality_issues(
+    *,
+    missing_cells: int,
+    missing_percent: float,
+    duplicate_rows: int,
+    duplicate_percent: float,
+    empty_columns: list[str],
+    constant_columns: list[str],
+    invalid_type_columns: list[str],
+    high_cardinality_columns: list[str],
+    date_parse_issue_columns: list[str],
+    outlier_columns: list[str],
+) -> list[DataQualityIssue]:
+    issues: list[DataQualityIssue] = []
+
+    if missing_cells > 0:
+        issues.append(
+            DataQualityIssue(
+                type="missing_values",
+                severity="high" if missing_percent >= 20 else "medium",
+                title="Missing values",
+                message=f"{missing_percent}% of cells are missing.",
+                count=missing_cells,
+                percent=missing_percent,
+            )
+        )
+
+    if duplicate_rows > 0:
+        issues.append(
+            DataQualityIssue(
+                type="duplicate_rows",
+                severity="medium",
+                title="Duplicate rows",
+                message=f"{duplicate_rows} duplicate row{'s' if duplicate_rows != 1 else ''} detected.",
+                count=duplicate_rows,
+                percent=duplicate_percent,
+            )
+        )
+
+    if empty_columns:
+        issues.append(
+            DataQualityIssue(
+                type="empty_columns",
+                severity="high",
+                title="Empty columns",
+                message="Columns with no values should be removed or populated.",
+                columns=empty_columns,
+                count=len(empty_columns),
+            )
+        )
+
+    if constant_columns:
+        issues.append(
+            DataQualityIssue(
+                type="constant_columns",
+                severity="low",
+                title="Constant columns",
+                message="Columns with a single value add little analytical signal.",
+                columns=constant_columns,
+                count=len(constant_columns),
+            )
+        )
+
+    if invalid_type_columns:
+        issues.append(
+            DataQualityIssue(
+                type="invalid_column_types",
+                severity="medium",
+                title="Unclear column types",
+                message="Some columns could not be classified deterministically.",
+                columns=invalid_type_columns,
+                count=len(invalid_type_columns),
+            )
+        )
+
+    if high_cardinality_columns:
+        issues.append(
+            DataQualityIssue(
+                type="high_cardinality",
+                severity="low",
+                title="High-cardinality columns",
+                message="These columns have many distinct values and may need grouping for analysis.",
+                columns=high_cardinality_columns,
+                count=len(high_cardinality_columns),
+            )
+        )
+
+    if date_parse_issue_columns:
+        issues.append(
+            DataQualityIssue(
+                type="date_parse_issues",
+                severity="medium",
+                title="Date parsing issues",
+                message="Some date-like values could not be parsed.",
+                columns=date_parse_issue_columns,
+                count=len(date_parse_issue_columns),
+            )
+        )
+
+    if outlier_columns:
+        issues.append(
+            DataQualityIssue(
+                type="outliers",
+                severity="medium",
+                title="Potential outliers",
+                message="Numeric columns contain potential outliers using the IQR rule.",
+                columns=outlier_columns,
+                count=len(outlier_columns),
+            )
+        )
+
+    return issues
 
 
 def build_correlations(dataframe: pd.DataFrame) -> list[CorrelationResult]:
@@ -239,6 +400,19 @@ def round_percent(numerator: int, denominator: int) -> float:
     if denominator <= 0:
         return 0.0
     return round((numerator / denominator) * 100, 2)
+
+
+def count_iqr_outliers(series: pd.Series) -> int:
+    if series.empty:
+        return 0
+    q1 = series.quantile(0.25)
+    q3 = series.quantile(0.75)
+    iqr = q3 - q1
+    if iqr == 0 or pd.isna(iqr):
+        return 0
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+    return int(((series < lower) | (series > upper)).sum())
 
 
 def to_json_safe(value: Any) -> Any:

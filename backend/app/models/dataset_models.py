@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class DatasetMetadata(BaseModel):
@@ -17,6 +17,7 @@ class DatasetMetadata(BaseModel):
     row_count: Optional[int] = None
     column_count: Optional[int] = None
     columns: Optional[list[str]] = None
+    last_analyzed_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -29,3 +30,7 @@ class DatasetDeleteResponse(BaseModel):
     dataset_id: str
     deleted: bool
     message: str
+
+
+class DatasetUpdateRequest(BaseModel):
+    original_filename: str = Field(min_length=1, max_length=512)

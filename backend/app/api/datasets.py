@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.errors import not_found
 from app.core.permissions import require_dataset_role
@@ -8,10 +8,10 @@ from app.core.security import require_api_key
 from app.core.config import get_settings
 from app.core.user_auth import get_current_user_required
 from app.db.models import User
-from app.models.dataset_models import DatasetDeleteResponse, DatasetMetadata
+from app.models.dataset_models import DatasetDeleteResponse, DatasetMetadata, DatasetUpdateRequest
 from app.repositories.workspace_repository import list_workspaces_for_user
 from app.services.workspace_service import can_access_workspace
-from app.services.dataset_service import delete_dataset, get_dataset, list_datasets
+from app.services.dataset_service import DatasetValidationError, delete_dataset, get_dataset, list_datasets, rename_dataset
 
 
 router = APIRouter(tags=["datasets"], dependencies=[Depends(require_api_key)])
@@ -38,6 +38,22 @@ def get_dataset_detail(
     _: Optional[User] = Depends(require_dataset_role("viewer")),
 ) -> DatasetMetadata:
     metadata = get_dataset(dataset_id)
+    if metadata is None:
+        raise not_found(f"Dataset '{dataset_id}' was not found.")
+    return metadata
+
+
+@router.patch("/datasets/{dataset_id}", response_model=DatasetMetadata)
+def update_dataset_detail(
+    dataset_id: str,
+    payload: DatasetUpdateRequest,
+    _: Optional[User] = Depends(require_dataset_role("editor")),
+) -> DatasetMetadata:
+    try:
+        metadata = rename_dataset(dataset_id, payload.original_filename)
+    except DatasetValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
     if metadata is None:
         raise not_found(f"Dataset '{dataset_id}' was not found.")
     return metadata

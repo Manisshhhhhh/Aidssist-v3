@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ColumnProfile(BaseModel):
@@ -18,6 +18,16 @@ class ColumnProfile(BaseModel):
     stats: dict[str, Any]
 
 
+class DataQualityIssue(BaseModel):
+    type: str
+    severity: str
+    title: str
+    message: str
+    columns: list[str] = Field(default_factory=list)
+    count: Optional[int] = None
+    percent: Optional[float] = None
+
+
 class DataQuality(BaseModel):
     missing_cells: int
     missing_percent: float
@@ -25,6 +35,11 @@ class DataQuality(BaseModel):
     duplicate_percent: float
     empty_columns: list[str]
     constant_columns: list[str]
+    invalid_type_columns: list[str] = Field(default_factory=list)
+    high_cardinality_columns: list[str] = Field(default_factory=list)
+    date_parse_issue_columns: list[str] = Field(default_factory=list)
+    outlier_columns: list[str] = Field(default_factory=list)
+    issue_breakdown: list[DataQualityIssue] = Field(default_factory=list)
     quality_score: int
 
 
