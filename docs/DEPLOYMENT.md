@@ -4,7 +4,7 @@ Aidssist V3 can run as local development processes or as a Docker Compose deploy
 
 For hosted demos on platform-provided URLs, see [Live Deployment](LIVE_DEPLOYMENT.md), [Vercel Deployment](VERCEL_DEPLOYMENT.md), and [Railway Deployment](RAILWAY_DEPLOYMENT.md). You do not need to buy a custom domain for a demo. Vercel or Netlify can host the frontend, but the FastAPI backend must run separately on Render, Railway, Fly.io, or a similar backend host.
 
-If `https://aidssist-v3.onrender.com` shows JSON, that is expected: it is the backend API. Deploy `web/` to Vercel and set `VITE_API_BASE_URL=https://aidssist-v3.onrender.com`; users should open the Vercel URL.
+If `https://aidssist-v3.onrender.com` shows JSON, that is expected: it is the backend API. Deploy `web/` to Vercel and set `VITE_API_BASE_URL=/api`; `web/vercel.json` proxies `/api/*` to Render so users should open the Vercel URL.
 
 After Vercel deploys, copy the Vercel frontend URL and set this on the Render backend:
 

@@ -29,3 +29,5 @@ dist/
 web copy/
 coverage/
 htmlcov/
+test-results/
+web/test-results/

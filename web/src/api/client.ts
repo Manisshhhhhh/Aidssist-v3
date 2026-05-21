@@ -1,5 +1,8 @@
 import type { ApiError } from "../types/api";
 
+const DEFAULT_RENDER_API_BASE_URL = "https://aidssist-v3.onrender.com";
+const VERCEL_API_PROXY_BASE_URL = "/api";
+
 export const API_BASE_URL = resolveApiBaseUrl();
 const API_KEY = import.meta.env.VITE_AIDSSIST_API_KEY;
 export const AUTH_TOKEN_STORAGE_KEY = "aidssist_access_token";
@@ -168,10 +171,16 @@ function notifyAuthRequired(path: string, message: string): void {
 }
 
 function resolveApiBaseUrl(): string {
-  const configuredUrl = import.meta.env.VITE_API_BASE_URL;
+  const configuredUrl = normalizeConfiguredBaseUrl(import.meta.env.VITE_API_BASE_URL);
+
+  if (typeof window !== "undefined" && isVercelHost(window.location.hostname)) {
+    if (!configuredUrl || configuredUrl === DEFAULT_RENDER_API_BASE_URL) {
+      return VERCEL_API_PROXY_BASE_URL;
+    }
+  }
 
   if (configuredUrl) {
-    return configuredUrl.replace(/\/$/, "");
+    return configuredUrl;
   }
 
   if (typeof window !== "undefined" && window.location.hostname) {
@@ -182,6 +191,14 @@ function resolveApiBaseUrl(): string {
   }
 
   return "http://127.0.0.1:8000";
+}
+
+function normalizeConfiguredBaseUrl(value: string | undefined): string {
+  return value?.trim().replace(/\/$/, "") ?? "";
+}
+
+function isVercelHost(hostname: string): boolean {
+  return hostname === "vercel.app" || hostname.endsWith(".vercel.app");
 }
 
 function isJsonBody(body: RequestOptions["body"]): body is Record<string, unknown> {

@@ -28,8 +28,10 @@ Output Directory: dist
 Environment variable:
 
 ```text
-VITE_API_BASE_URL=https://aidssist-v3.onrender.com
+VITE_API_BASE_URL=/api
 ```
+
+`web/vercel.json` rewrites `/api/*` to `https://aidssist-v3.onrender.com/*`. That keeps browser requests on the Vercel origin and prevents API status failures caused by CORS or Vercel preview alias drift.
 
 Do not add backend secrets to Vercel. `AIDSSIST_JWT_SECRET_KEY`, Gemini keys, API keys, databases, reports, datasets, and backups belong only on the backend host or local machine.
 
@@ -40,7 +42,7 @@ Do not add backend secrets to Vercel. `AIDSSIST_JWT_SECRET_KEY`, Gemini keys, AP
 3. Set root directory to `web`.
 4. Confirm Framework Preset is `Vite`.
 5. Confirm build/output settings.
-6. Add `VITE_API_BASE_URL=https://aidssist-v3.onrender.com`.
+6. Add `VITE_API_BASE_URL=/api`.
 7. Deploy.
 8. Copy the generated Vercel URL.
 
@@ -48,7 +50,7 @@ Do not add backend secrets to Vercel. `AIDSSIST_JWT_SECRET_KEY`, Gemini keys, AP
 
 After Vercel deploys, copy the Vercel frontend URL.
 
-In Render backend environment variables, set:
+The `/api` proxy means the Vercel demo does not depend on browser CORS for normal use. Keep the exact Vercel URL in Render anyway so direct diagnostics and non-proxied deployments continue to work:
 
 ```text
 AIDSSIST_CORS_ORIGINS=https://aidssist-v3.vercel.app

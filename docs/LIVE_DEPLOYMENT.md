@@ -52,7 +52,7 @@ Use platform-provided URLs:
 
 Then configure:
 
-- `VITE_API_BASE_URL=https://your-backend-url`
+- `VITE_API_BASE_URL=/api` on Vercel with the included rewrite, or `https://your-backend-url` on hosts without an API proxy
 - `AIDSSIST_CORS_ORIGINS=https://your-frontend-url`
 - `AIDSSIST_CORS_ORIGIN_REGEX=^$` for the fixed hosted deployment
 - `AIDSSIST_ENVIRONMENT=production`
@@ -123,19 +123,20 @@ Important: `https://aidssist-v3.onrender.com` is the backend API, not the websit
 4. Set:
 
    ```text
-   VITE_API_BASE_URL=https://your-backend.onrender.com
+   VITE_API_BASE_URL=/api
    ```
 
-5. Deploy the frontend.
-6. Copy the Vercel frontend URL.
-7. In Render backend env, set:
+5. Update `web/vercel.json` if your backend is not `https://aidssist-v3.onrender.com`; the `/api/*` rewrite destination must point at your backend.
+6. Deploy the frontend.
+7. Copy the Vercel frontend URL.
+8. In Render backend env, set:
 
    ```text
    AIDSSIST_CORS_ORIGINS=https://your-frontend.vercel.app
    ```
 
-8. Redeploy/restart the backend.
-9. Open the Vercel URL and confirm API status is online.
+9. Redeploy/restart the backend.
+10. Open the Vercel URL and confirm API status is online.
 
 See [Vercel Deployment](VERCEL_DEPLOYMENT.md) for the exact frontend settings and smoke command.
 
@@ -180,7 +181,7 @@ This repo includes `render.yaml` for a practical Render starting point:
 
 The blueprint intentionally does not provision a separate worker because Render disks are not shared between services. Enable a worker only after moving job state and artifacts to shared managed services.
 
-After creating the backend, update the frontend `VITE_API_BASE_URL` to the backend `.onrender.com` URL and redeploy the frontend.
+After creating the backend, update the frontend API target and redeploy the frontend. For Vercel, keep `VITE_API_BASE_URL=/api` and update the rewrite destination in `web/vercel.json`; for Render-only or Netlify hosting, set `VITE_API_BASE_URL` to the backend `.onrender.com` URL.
 
 The blueprint can be used for Render-only hosting, but Vercel/Netlify plus Render is often simpler for the frontend because Vite environment variables are configured directly in the frontend host.
 
@@ -198,7 +199,7 @@ The blueprint can be used for Render-only hosting, but Vercel/Netlify plus Rende
    - `AIDSSIST_BACKUP_DIR=/data/backups`
 4. Attach a persistent disk to the backend at `/data`.
 5. Deploy the backend and confirm `/health`.
-6. Set frontend `VITE_API_BASE_URL` to the backend public URL.
+6. Set frontend `VITE_API_BASE_URL` to `/api` on Vercel with a matching rewrite, or to the backend public URL on hosts without a proxy.
 7. Deploy the frontend.
 8. Set backend CORS to allow the frontend URL.
 9. Register a demo user.
@@ -264,7 +265,7 @@ The backend emits baseline hardening headers on all API responses:
 - `Permissions-Policy`
 - `Content-Security-Policy`
 
-The Vercel frontend mirrors those headers in `web/vercel.json`. If the backend host changes, update the frontend CSP `connect-src` entry alongside `VITE_API_BASE_URL`.
+The Vercel frontend mirrors those headers in `web/vercel.json` and proxies `/api/*` to the Render backend. If the backend host changes, update the Vercel rewrite destination, the frontend CSP `connect-src` entry, and any non-Vercel `VITE_API_BASE_URL` values together.
 
 ## Pricing And Limits
 

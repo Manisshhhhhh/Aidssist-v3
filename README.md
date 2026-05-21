@@ -136,8 +136,10 @@ If `https://aidssist-v3.onrender.com` shows JSON, that is expected: it is the ba
 Vercel frontend setting:
 
 ```text
-VITE_API_BASE_URL=https://aidssist-v3.onrender.com
+VITE_API_BASE_URL=/api
 ```
+
+The Vercel config proxies `/api/*` to `https://aidssist-v3.onrender.com/*`, so the browser calls the same Vercel origin and avoids live-demo CORS drift. Non-Vercel static hosts can still set `VITE_API_BASE_URL=https://aidssist-v3.onrender.com` and configure backend CORS for that frontend URL.
 
 Render backend CORS after Vercel deploys:
 
@@ -286,7 +288,7 @@ AIDSSIST_USER_AUTH_ENABLED=true
 AIDSSIST_AUTH_ENABLED=false
 AIDSSIST_CORS_ORIGINS=https://aidssist-v3.vercel.app
 AIDSSIST_CORS_ORIGIN_REGEX=^$
-VITE_API_BASE_URL=https://aidssist-v3.onrender.com
+VITE_API_BASE_URL=/api
 ```
 
 Do not use `AIDSSIST_CORS_ORIGINS=*` for the hosted demo or production. Wildcard CORS is only acceptable for short local diagnostics against disposable environments.
