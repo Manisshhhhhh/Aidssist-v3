@@ -26,5 +26,6 @@ backend/backups/
 node_modules/
 web/dist/
 dist/
+web copy/
 coverage/
 htmlcov/

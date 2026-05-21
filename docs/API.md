@@ -262,7 +262,7 @@ Optional query:
 
 - `workspace_id=123`: list datasets in a workspace where the current user has at least `viewer`.
 
-Response summary: array of dataset metadata.
+Response summary: array of dataset metadata, including row count, column count, file size, uploaded timestamp, and `last_analyzed_at` when analysis has run.
 
 Common errors:
 
@@ -272,10 +272,30 @@ Common errors:
 
 Purpose: get one dataset metadata record.
 
-Response summary: dataset metadata.
+Response summary: dataset metadata, including row count, column count, file size, uploaded timestamp, columns, and `last_analyzed_at` when analysis has run.
 
 Common errors:
 
+- `404`: dataset does not exist.
+- `401`: API key or bearer token required when enabled.
+
+## PATCH /datasets/{dataset_id}
+
+Purpose: rename a dataset display name while preserving stored files and dataset id. Requires dataset `editor` permission when user auth is enabled.
+
+Request shape:
+
+```json
+{
+  "original_filename": "Q1 sales review"
+}
+```
+
+Response summary: updated dataset metadata.
+
+Common errors:
+
+- `400`: name is empty or too long.
 - `404`: dataset does not exist.
 - `401`: API key or bearer token required when enabled.
 
@@ -294,7 +314,7 @@ Common errors:
 
 Purpose: run deterministic profiling, quality scoring, correlations, insights, and chart recommendations.
 
-Response summary: row/column count, column profiles, quality, correlations, insights, recommended charts, created timestamp. With `?async=true`, returns `202` and a job response.
+Response summary: row/column count, column profiles, quality, correlations, insights, recommended charts, created timestamp. Quality includes `quality_score`, missing/duplicate percentages, empty/constant columns, unclear type columns, high-cardinality columns, date parsing issues, outlier columns, and an `issue_breakdown`. With `?async=true`, returns `202` and a job response.
 
 Common errors:
 

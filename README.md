@@ -2,7 +2,7 @@
 
 Status: `3.0.0-rc3`
 
-Aidssist v3 is a local-first autonomous data intelligence platform. It uploads CSV and Excel `.xlsx` files, validates and profiles datasets, recommends charts, renders real visualizations, produces deterministic insights, forecasts time series, answers dataset questions with a safe rule-based Q&A engine, and exports HTML/JSON reports.
+Aidssist v3 is a local-first autonomous data intelligence platform. It uploads CSV and Excel `.xlsx` files, validates and profiles datasets, scores data quality, recommends charts, renders real visualizations, produces deterministic insights, forecasts time series, answers dataset questions with a safe rule-based Q&A engine, and exports HTML/JSON reports.
 
 The product is intentionally deterministic first. LLM explanation layers can be added later behind clean provider interfaces, but analysis, forecasting, chat answers, and reports do not depend on AI-generated guesses.
 
@@ -231,7 +231,7 @@ python scripts/smoke_test.py
 Use the files in `sample_data/`:
 
 - `sales_timeseries.csv`: charts, forecast, chat, and reports.
-- `data_quality_issues.csv`: missing values, duplicates, constant-column insights.
+- `data_quality_issues.csv`: missing values, duplicates, constant-column insights, and quality scoring.
 - `no_forecast_dataset.csv`: chart/chat/report flow with forecast empty state.
 
 ## Environment Variables

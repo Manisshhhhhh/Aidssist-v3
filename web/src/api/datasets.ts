@@ -1,5 +1,5 @@
 import { apiRequest } from "./client";
-import type { DatasetDeleteResponse, DatasetMetadata } from "../types/dataset";
+import type { DatasetDeleteResponse, DatasetMetadata, DatasetUpdateRequest } from "../types/dataset";
 
 export function uploadDataset(file: File, workspaceId?: number | null): Promise<DatasetMetadata> {
   const formData = new FormData();
@@ -24,5 +24,12 @@ export function getDataset(datasetId: string): Promise<DatasetMetadata> {
 export function deleteDataset(datasetId: string): Promise<DatasetDeleteResponse> {
   return apiRequest<DatasetDeleteResponse>(`/datasets/${encodeURIComponent(datasetId)}`, {
     method: "DELETE",
+  });
+}
+
+export function renameDataset(datasetId: string, request: DatasetUpdateRequest): Promise<DatasetMetadata> {
+  return apiRequest<DatasetMetadata>(`/datasets/${encodeURIComponent(datasetId)}`, {
+    method: "PATCH",
+    body: { ...request },
   });
 }

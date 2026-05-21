@@ -29,10 +29,22 @@ export interface ColumnStats {
   min_date?: string | null;
   max_date?: string | null;
   range_days?: number | null;
+  invalid_parse_count?: number | null;
+  invalid_parse_percent?: number | null;
   top_values?: TopValue[];
   average_length?: number | null;
   min_length?: number | null;
   max_length?: number | null;
+}
+
+export interface DataQualityIssue {
+  type: string;
+  severity: InsightSeverity;
+  title: string;
+  message: string;
+  columns: string[];
+  count?: number | null;
+  percent?: number | null;
 }
 
 export interface ColumnProfile {
@@ -54,6 +66,11 @@ export interface DataQuality {
   duplicate_percent: number;
   empty_columns: string[];
   constant_columns: string[];
+  invalid_type_columns: string[];
+  high_cardinality_columns: string[];
+  date_parse_issue_columns: string[];
+  outlier_columns: string[];
+  issue_breakdown: DataQualityIssue[];
   quality_score: number;
 }
 

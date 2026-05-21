@@ -82,6 +82,26 @@ test("authenticated user can reach dashboard, chat, and report flows", async ({ 
   await expect(page.getByText("Report generated")).toBeVisible();
 });
 
+test("dataset search, quality score, and delete work", async ({ page }) => {
+  const datasets = [dataset, { ...dataset, dataset_id: "dataset-2", original_filename: "inventory.csv" }];
+  await mockApi(page, { userAuthEnabled: false, datasets });
+
+  await page.goto("/");
+  await page.getByPlaceholder("Search datasets or columns").fill("inventory");
+  await expect(page.getByText("inventory.csv")).toBeVisible();
+  await expect(page.getByText("sales.csv")).toHaveCount(0);
+
+  await page.getByPlaceholder("Search datasets or columns").fill("sales");
+  await page.getByRole("button", { name: /open dataset sales\.csv/i }).click();
+  await expect(page.getByText("Quality score: 82/100")).toBeVisible();
+  await expect(page.getByText("Good")).toBeVisible();
+
+  await page.getByRole("button", { name: /back to uploads/i }).click();
+  page.on("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: /delete dataset sales\.csv/i }).click();
+  await expect(page.getByText("sales.csv")).toHaveCount(0);
+});
+
 type MockApiOptions = {
   datasets?: unknown[];
   datasetsStatus?: number;
@@ -100,6 +120,8 @@ type AuthStatus = {
 };
 
 async function mockApi(page: Page, options: MockApiOptions) {
+  let currentDatasets = [...(options.datasets ?? [])];
+
   await page.route(`${apiBaseUrl}/**`, async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -148,7 +170,20 @@ async function mockApi(page: Page, options: MockApiOptions) {
         await fulfillJson(route, { detail: "Authentication is required." }, options.datasetsStatus);
         return;
       }
-      await fulfillJson(route, options.datasets ?? []);
+      await fulfillJson(route, currentDatasets);
+      return;
+    }
+
+    if (path.startsWith("/datasets/") && request.method() === "DELETE") {
+      const datasetId = path.split("/")[2];
+      currentDatasets = currentDatasets.filter(
+        (item) => (item as { dataset_id?: string }).dataset_id !== datasetId,
+      );
+      await fulfillJson(route, {
+        dataset_id: datasetId,
+        deleted: true,
+        message: "Dataset deleted successfully.",
+      });
       return;
     }
 
@@ -242,11 +277,15 @@ const dataset = {
   dataset_id: "dataset-1",
   original_filename: "sales.csv",
   stored_filename: "sales.csv",
+  file_size_bytes: 1024,
+  content_type: "text/csv",
   row_count: 2,
   column_count: 2,
   created_at: now,
+  last_analyzed_at: now,
   workspace_id: 1,
   owner_user_id: 1,
+  columns: ["date", "sales", "region"],
 };
 
 const analysis = {
@@ -285,7 +324,22 @@ const analysis = {
     duplicate_percent: 0,
     empty_columns: [],
     constant_columns: [],
-    quality_score: 100,
+    invalid_type_columns: [],
+    high_cardinality_columns: ["region"],
+    date_parse_issue_columns: [],
+    outlier_columns: [],
+    issue_breakdown: [
+      {
+        type: "high_cardinality",
+        severity: "low",
+        title: "High-cardinality columns",
+        message: "These columns have many distinct values and may need grouping for analysis.",
+        columns: ["region"],
+        count: 1,
+        percent: null,
+      },
+    ],
+    quality_score: 82,
   },
   correlations: [],
   insights: [

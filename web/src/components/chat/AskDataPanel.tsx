@@ -117,7 +117,7 @@ export function AskDataPanel({ analysis, datasetId }: AskDataPanelProps) {
 }
 
 function buildDefaultPrompts(analysis?: AnalysisResponse): string[] {
-  const prompts = ["Summarize this dataset", "Show missing values", "What charts should I use?"];
+  const prompts = ["Summarize this dataset", "Which columns have missing values?", "What charts should I use?"];
 
   if (!analysis) {
     return prompts;

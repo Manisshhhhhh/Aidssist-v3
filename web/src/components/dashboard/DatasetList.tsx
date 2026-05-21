@@ -1,8 +1,19 @@
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, CalendarClock, Database, RefreshCw, Rows3, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  AlertCircle,
+  CalendarClock,
+  Database,
+  FileDigit,
+  Pencil,
+  RefreshCw,
+  Rows3,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
 
-import { deleteDataset, listDatasets } from "../../api/datasets";
+import { deleteDataset, listDatasets, renameDataset } from "../../api/datasets";
 import { getFriendlyApiErrorMessage } from "../../api/errors";
 import type { DatasetMetadata } from "../../types/dataset";
 import { Button } from "../ui/Button";
@@ -24,7 +35,29 @@ export function DatasetList({
   const [datasets, setDatasets] = useState<DatasetMetadata[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingDatasetId, setDeletingDatasetId] = useState<string | null>(null);
+  const [editingDatasetId, setEditingDatasetId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  const filteredDatasets = useMemo(() => {
+    const normalized = searchTerm.trim().toLowerCase();
+    if (!normalized) {
+      return datasets;
+    }
+
+    return datasets.filter((dataset) => {
+      const haystack = [
+        dataset.original_filename,
+        dataset.dataset_id,
+        ...(dataset.columns ?? []),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(normalized);
+    });
+  }, [datasets, searchTerm]);
 
   const loadDatasets = useCallback(async () => {
     setIsLoading(true);
@@ -67,6 +100,34 @@ export function DatasetList({
     }
   }
 
+  function startRename(dataset: DatasetMetadata) {
+    setEditingDatasetId(dataset.dataset_id);
+    setRenameValue(dataset.original_filename);
+    setError(null);
+  }
+
+  async function handleRename(dataset: DatasetMetadata) {
+    const nextName = renameValue.trim();
+    if (!nextName || nextName === dataset.original_filename || isRenaming) {
+      setEditingDatasetId(null);
+      return;
+    }
+
+    setIsRenaming(true);
+    setError(null);
+    try {
+      const updated = await renameDataset(dataset.dataset_id, { original_filename: nextName });
+      setDatasets((current) =>
+        current.map((item) => (item.dataset_id === updated.dataset_id ? updated : item)),
+      );
+      setEditingDatasetId(null);
+    } catch (renameError) {
+      setError(getRenameErrorMessage(renameError));
+    } finally {
+      setIsRenaming(false);
+    }
+  }
+
   return (
     <Card className="h-full">
       <div className="flex items-start justify-between gap-4">
@@ -87,6 +148,17 @@ export function DatasetList({
         </Button>
       </div>
 
+      <label className="mt-5 flex items-center gap-2 rounded-xl border border-outline bg-surface1 px-3 py-2 text-sm text-on-surface">
+        <Search className="shrink-0 text-on-surface-muted" size={16} aria-hidden="true" />
+        <input
+          className="min-h-9 flex-1 bg-transparent outline-none placeholder:text-on-surface-disabled"
+          onChange={(event) => setSearchTerm(event.target.value)}
+          placeholder="Search datasets or columns"
+          type="search"
+          value={searchTerm}
+        />
+      </label>
+
       <div className="mt-5">
         {isLoading ? <DatasetListSkeleton /> : null}
 
@@ -105,9 +177,15 @@ export function DatasetList({
           </div>
         ) : null}
 
-        {!isLoading && !error && datasets.length > 0 ? (
+        {!isLoading && !error && datasets.length > 0 && filteredDatasets.length === 0 ? (
+          <div className="rounded-xl border border-outline bg-surface1 p-5 text-sm text-on-surface-muted">
+            No datasets match this search.
+          </div>
+        ) : null}
+
+        {!isLoading && !error && filteredDatasets.length > 0 ? (
           <div className="space-y-3">
-            {datasets.map((dataset) => (
+            {filteredDatasets.map((dataset) => (
               <article
                 className={[
                   "w-full rounded-xl border p-4 text-left transition duration-200 motion-safe:hover:-translate-y-0.5",
@@ -119,9 +197,40 @@ export function DatasetList({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-on-surface">
-                      {dataset.original_filename}
-                    </p>
+                    {editingDatasetId === dataset.dataset_id ? (
+                      <form
+                        className="flex gap-2"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          void handleRename(dataset);
+                        }}
+                      >
+                        <input
+                          aria-label={`Rename ${dataset.original_filename}`}
+                          className="min-h-9 min-w-0 rounded-lg border border-outline bg-surface2 px-3 py-1 text-sm text-on-surface outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                          disabled={isRenaming}
+                          onChange={(event) => setRenameValue(event.target.value)}
+                          value={renameValue}
+                        />
+                        <Button className="min-h-9 px-3" disabled={isRenaming} type="submit">
+                          Save
+                        </Button>
+                        <Button
+                          aria-label="Cancel rename"
+                          className="min-h-9 px-3"
+                          disabled={isRenaming}
+                          onClick={() => setEditingDatasetId(null)}
+                          type="button"
+                          variant="ghost"
+                        >
+                          <X size={15} aria-hidden="true" />
+                        </Button>
+                      </form>
+                    ) : (
+                      <p className="truncate text-sm font-semibold text-on-surface">
+                        {dataset.original_filename}
+                      </p>
+                    )}
                     <p className="mt-1 font-mono text-xs text-primary-light">
                       {shortDatasetId(dataset.dataset_id)}
                     </p>
@@ -131,7 +240,7 @@ export function DatasetList({
                   </span>
                 </div>
 
-                <div className="mt-4 grid gap-2 text-xs text-on-surface-muted sm:grid-cols-3">
+                <div className="mt-4 grid gap-2 text-xs text-on-surface-muted sm:grid-cols-2">
                   <DatasetMetaItem
                     icon={<Rows3 size={14} aria-hidden="true" />}
                     label={`${formatNullableNumber(dataset.row_count)} rows`}
@@ -142,7 +251,15 @@ export function DatasetList({
                   />
                   <DatasetMetaItem
                     icon={<CalendarClock size={14} aria-hidden="true" />}
-                    label={formatDate(dataset.created_at)}
+                    label={`Uploaded ${formatDate(dataset.created_at)}`}
+                  />
+                  <DatasetMetaItem
+                    icon={<CalendarClock size={14} aria-hidden="true" />}
+                    label={`Analyzed ${formatOptionalDate(dataset.last_analyzed_at)}`}
+                  />
+                  <DatasetMetaItem
+                    icon={<FileDigit size={14} aria-hidden="true" />}
+                    label={formatFileSize(dataset.file_size_bytes)}
                   />
                 </div>
 
@@ -154,6 +271,16 @@ export function DatasetList({
                     variant="secondary"
                   >
                     Open dataset
+                  </Button>
+                  <Button
+                    aria-label={`Rename dataset ${dataset.original_filename}`}
+                    className="min-h-10 px-3"
+                    disabled={editingDatasetId === dataset.dataset_id}
+                    onClick={() => startRename(dataset)}
+                    variant="ghost"
+                  >
+                    <Pencil size={16} aria-hidden="true" />
+                    Rename
                   </Button>
                   <Button
                     aria-label={`Delete dataset ${dataset.original_filename}`}
@@ -217,10 +344,24 @@ function formatDate(value: string): string {
   }).format(date);
 }
 
+function formatOptionalDate(value: string | null | undefined): string {
+  return value ? formatDate(value) : "not yet";
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
 function getLoadErrorMessage(error: unknown): string {
   return getFriendlyApiErrorMessage(error, { fallback: "Unable to load datasets." });
 }
 
 function getDeleteErrorMessage(error: unknown): string {
   return getFriendlyApiErrorMessage(error, { fallback: "Unable to delete this dataset." });
+}
+
+function getRenameErrorMessage(error: unknown): string {
+  return getFriendlyApiErrorMessage(error, { fallback: "Unable to rename this dataset." });
 }
